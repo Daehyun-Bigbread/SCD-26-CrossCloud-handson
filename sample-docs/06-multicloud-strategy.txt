@@ -1,0 +1,43 @@
+멀티클라우드(Multi-Cloud) 전략 개요
+
+멀티클라우드란 둘 이상의 클라우드 서비스 제공자(CSP)를 조합하여 인프라를 구성하는 전략입니다.
+
+멀티클라우드를 채택하는 이유:
+1. 벤더 종속(Vendor Lock-in) 방지: 특정 CSP에 대한 의존도를 줄여 협상력을 유지합니다.
+2. 서비스 최적화: 각 CSP의 강점을 활용합니다 (예: GCP의 데이터 분석 + AWS의 ML/AI 서빙).
+3. 지역 규정 준수: 데이터 주권(Data Sovereignty) 요구사항에 따라 특정 리전에 데이터를 배치합니다.
+4. 재해 복구(DR): CSP 수준의 장애에 대비하여 복원력을 확보합니다.
+5. 인수합병(M&A): 서로 다른 CSP를 사용하는 조직이 합쳐질 때 발생합니다.
+
+멀티클라우드 구현 시 고려사항:
+
+네트워크 연결:
+- 전용선(Direct Connect, Cloud Interconnect) 또는 VPN을 통해 클라우드 간 프라이빗 연결을 구성합니다.
+- 데이터 전송 비용(Egress Cost)을 사전에 계산해야 합니다.
+- 레이턴시를 최소화하기 위해 가까운 리전을 선택합니다.
+
+데이터 동기화:
+- AWS DataSync, Storage Transfer Service 등 관리형 데이터 전송 서비스를 활용합니다.
+- 실시간 동기화가 필요한 경우 이벤트 기반 아키텍처를 고려합니다.
+- 데이터 일관성(Consistency)과 충돌 해결(Conflict Resolution) 전략을 수립합니다.
+
+보안 및 인증:
+- 각 CSP의 IAM(Identity and Access Management) 시스템을 통합하거나 연동합니다.
+- 시크릿 관리를 중앙화합니다 (AWS Secrets Manager, HashiCorp Vault 등).
+- 네트워크 보안 정책을 클라우드 간 일관되게 적용합니다.
+
+비용 관리:
+- 클라우드 간 데이터 전송(Egress) 비용을 모니터링합니다.
+- 각 CSP의 요금 체계를 이해하고 최적의 조합을 설계합니다.
+- FinOps 도구를 활용하여 통합 비용을 관리합니다.
+
+운영(Observability):
+- 통합 모니터링 대시보드를 구성합니다 (Grafana, Datadog 등).
+- 로그와 메트릭을 한 곳에서 수집하고 분석합니다.
+- 알림(Alerting) 정책을 통합 관리합니다.
+
+실제 아키텍처 사례 — RAG 파이프라인:
+- GCP에서 데이터를 수집하고 FAISS 인덱스를 빌드합니다.
+- AWS DataSync로 인덱스를 S3에 동기화합니다.
+- AWS에서 인덱스를 로드하여 실시간 검색 및 LLM 응답 생성을 수행합니다.
+- 이 구조에서 GCP는 Offline Pipeline, AWS는 Online Serving 역할을 담당합니다.

@@ -1,0 +1,31 @@
+AWS DataSync 서비스 소개
+
+AWS DataSync는 온프레미스 스토리지, 다른 클라우드 서비스, AWS 스토리지 서비스 간의 데이터 이동을 간소화하고 가속화하는 서비스입니다.
+
+지원하는 스토리지 유형:
+1. AWS 스토리지: Amazon S3, Amazon EFS, Amazon FSx (Windows, Lustre, NetApp ONTAP, OpenZFS)
+2. 온프레미스: NFS, SMB 파일 시스템
+3. 다른 클라우드: Google Cloud Storage, Azure Blob Storage, Azure Files 등 (Object Storage 프로토콜 지원)
+
+크로스 클라우드 데이터 전송:
+- Google Cloud Storage(GCS)에서 Amazon S3로 데이터를 전송할 수 있습니다.
+- GCS의 HMAC(Hash-based Message Authentication Code) 키를 사용하여 인증합니다.
+- HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍으로 구성됩니다.
+- DataSync 콘솔에서 소스 위치를 Object Storage로 설정하고, 서버 URL을 https://storage.googleapis.com으로 지정합니다.
+
+데이터 전송 과정:
+1. 소스 위치(Location) 생성: 데이터를 가져올 스토리지의 접근 정보를 등록합니다.
+2. 대상 위치(Location) 생성: 데이터를 전송할 AWS 스토리지의 정보를 등록합니다.
+3. 태스크(Task) 생성: 소스와 대상 위치를 연결하고 전송 옵션을 설정합니다.
+4. 태스크 실행: 수동 실행 또는 스케줄에 따라 데이터 전송이 시작됩니다.
+
+전송 옵션:
+- 데이터 무결성 검증: 전송된 데이터의 체크섬을 비교하여 정확성을 보장합니다.
+- 대역폭 제한: 네트워크 대역폭 사용량을 제한할 수 있습니다.
+- 파일 필터링: 포함/제외 패턴을 설정하여 특정 파일만 전송할 수 있습니다.
+- 스케줄링: 정기적인 데이터 동기화를 위해 일정을 설정할 수 있습니다.
+
+요금 체계:
+- 전송된 데이터 양(GB)에 따라 과금됩니다.
+- 데이터 전송 요금은 리전에 따라 다르지만, 대략 GB당 $0.0125입니다.
+- 최소 요금은 없으며, 사용한 만큼만 지불합니다.

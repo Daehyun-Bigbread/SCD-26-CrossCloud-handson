@@ -1,0 +1,23 @@
+Amazon Bedrock 서비스 소개
+
+Amazon Bedrock은 다양한 AI 기업의 고성능 Foundation Model(FM)을 단일 API를 통해 사용할 수 있게 해주는 완전 관리형 서비스입니다.
+
+지원 Foundation Model:
+1. Anthropic Claude: 대화, 텍스트 생성, 코드 작성에 뛰어난 성능을 보입니다. Claude 3.5 Sonnet, Claude 3 Haiku 등 다양한 모델이 제공됩니다.
+2. Amazon Titan: Amazon이 자체 개발한 모델로, Titan Text(텍스트 생성), Titan Embeddings(임베딩), Titan Image Generator(이미지 생성) 등이 있습니다.
+3. Meta Llama: Meta의 오픈소스 대규모 언어 모델로, Llama 3.1, Llama 3.2 등이 지원됩니다.
+4. Mistral AI: Mistral 7B, Mixtral 8x7B 등 효율적인 소형/중형 모델을 제공합니다.
+5. Cohere: 텍스트 생성, 요약, 분류에 특화된 Command 모델과 임베딩 모델을 제공합니다.
+6. Stability AI: 이미지 생성에 특화된 Stable Diffusion 계열 모델을 제공합니다.
+
+주요 기능:
+- Knowledge Bases: RAG(Retrieval-Augmented Generation) 파이프라인을 자동으로 구축하여 사내 문서 기반 질의응답 시스템을 만들 수 있습니다.
+- Agents: 복잡한 태스크를 자동으로 분해하고 실행할 수 있는 AI 에이전트를 구축합니다.
+- Guardrails: 모델 출력의 안전성을 보장하기 위한 필터링 및 제어 기능입니다.
+- Fine-tuning: 특정 도메인이나 태스크에 맞게 모델을 커스터마이징할 수 있습니다.
+- Model Evaluation: 다양한 모델의 성능을 객관적으로 비교하고 평가할 수 있습니다.
+
+요금 체계:
+- On-Demand: 입력/출력 토큰 수에 따라 과금됩니다. 사전 약정 없이 사용한 만큼만 지불합니다.
+- Provisioned Throughput: 일정한 처리량을 보장받으며 할인된 요금으로 이용할 수 있습니다.
+- Batch Inference: 대량 추론 작업을 배치로 처리하여 비용을 절감합니다.

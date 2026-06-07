@@ -1,0 +1,49 @@
+Amazon Bedrock Knowledge Bases 상세 가이드
+
+Amazon Bedrock Knowledge Bases는 RAG(Retrieval-Augmented Generation) 파이프라인을 자동으로 구축해주는 완전 관리형 서비스입니다.
+
+Knowledge Bases가 자동으로 처리하는 작업:
+1. 문서 파싱: PDF, TXT, HTML, MD, CSV, DOC/DOCX, XLS/XLSX 형식의 문서를 텍스트로 변환합니다.
+2. 청킹(Chunking): 문서를 설정된 크기의 청크로 분할합니다. 기본값은 300 토큰입니다.
+3. 임베딩(Embedding): 각 청크를 선택한 임베딩 모델로 벡터화합니다.
+4. 벡터 인덱싱: 벡터를 OpenSearch Serverless 또는 기타 벡터 DB에 저장하고 인덱싱합니다.
+
+데이터 소스 유형:
+- Amazon S3: 가장 일반적인 데이터 소스입니다. S3 버킷의 특정 경로를 지정합니다.
+- Confluence: Atlassian Confluence 페이지를 데이터 소스로 사용합니다.
+- SharePoint: Microsoft SharePoint 문서를 연결합니다.
+- Salesforce: Salesforce 데이터를 활용합니다.
+- Web Crawler: 웹 페이지를 크롤링하여 데이터 소스로 사용합니다.
+
+벡터 데이터베이스 옵션:
+- Quick create (OpenSearch Serverless): 자동으로 컬렉션을 생성합니다. 설정이 간단하고 빠릅니다.
+- OpenSearch Serverless (수동): 기존 컬렉션을 연결하거나 직접 세부 설정을 합니다.
+- Amazon Aurora PostgreSQL: pgvector 확장을 사용하는 Aurora DB를 연결합니다.
+- Pinecone: 외부 벡터 DB 서비스인 Pinecone을 연결합니다.
+- Redis Enterprise Cloud: Redis 벡터 검색을 활용합니다.
+- MongoDB Atlas: MongoDB의 벡터 검색 기능을 사용합니다.
+
+청킹 전략 옵션:
+- Default chunking: 300 토큰 단위로 자동 분할합니다. 대부분의 경우 충분합니다.
+- Fixed size chunking: 사용자가 청크 크기와 오버랩을 지정합니다.
+- Hierarchical chunking: 부모-자식 청크 구조를 생성합니다.
+- Semantic chunking: 의미 단위로 자동 분할합니다.
+- No chunking: 문서를 분할하지 않고 전체를 하나의 청크로 사용합니다.
+
+사용 가능한 임베딩 모델:
+- Amazon Titan Text Embeddings V2: 1024차원, AWS 네이티브, 가장 많이 사용됩니다.
+- Amazon Titan Multimodal Embeddings G1: 텍스트와 이미지를 모두 임베딩합니다.
+- Cohere Embed English v3: 영어 텍스트에 최적화된 임베딩 모델입니다.
+- Cohere Embed Multilingual v3: 다국어 텍스트 임베딩에 우수한 성능을 보입니다.
+
+Knowledge Base 활용 방법:
+1. Bedrock 콘솔의 Playground에서 직접 테스트할 수 있습니다.
+2. Bedrock Agent와 연결하여 복잡한 워크플로에 활용할 수 있습니다.
+3. RetrieveAndGenerate API를 통해 프로그래밍 방식으로 호출할 수 있습니다.
+4. Retrieve API로 검색만 수행하고, 생성은 별도로 처리할 수도 있습니다.
+
+OpenSearch Serverless 비용:
+- 최소 2 OCU(OpenSearch Compute Unit)가 필요합니다.
+- 각 OCU는 시간당 $0.24입니다 (ap-northeast-2 기준).
+- 따라서 최소 시간당 $0.48의 비용이 발생합니다.
+- Knowledge Base를 삭제하면 Quick create로 생성된 컬렉션도 함께 삭제됩니다.
