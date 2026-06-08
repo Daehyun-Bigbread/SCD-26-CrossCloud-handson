@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if page and page.meta %}
+  {% set module_num = page.url | replace("/", "") | replace("index.html", "") %}
+{% endif %}
+
+<div id="workshop-progress-bar" class="workshop-progress" style="display:none;">
+  <div class="progress-header">
+    <span class="progress-label">워크숍 진행률</span>
+    <span class="progress-count" id="progress-count">0 / 5 모듈</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+  </div>
+  <div class="progress-steps" id="progress-steps">
+    <a href="{{ '00-prerequisites/' | url }}" class="step" data-module="0" title="Module 0: 사전 준비">0</a>
+    <a href="{{ '01-datasync-gcs-to-s3/' | url }}" class="step" data-module="1" title="Module 1: GCS → S3 전송">1</a>
+    <a href="{{ '02-bedrock-kb-create/' | url }}" class="step" data-module="2" title="Module 2: Bedrock KB">2</a>
+    <a href="{{ '03-chatbot-test/' | url }}" class="step" data-module="3" title="Module 3: 챗봇 테스트">3</a>
+    <a href="{{ '04-cleanup/' | url }}" class="step" data-module="4" title="Module 4: 리소스 정리">4</a>
+  </div>
+</div>
+
+{{ super() }}
+
+<div id="module-complete-section" class="module-complete-section" style="display:none;">
+  <hr>
+  <button id="btn-complete-module" class="module-complete-btn" onclick="window.workshopProgress.toggleCurrentModule()">
+    <span class="btn-icon" id="btn-complete-icon">☐</span>
+    <span id="btn-complete-text">이 모듈을 완료로 표시</span>
+  </button>
+</div>
+{% endblock %}

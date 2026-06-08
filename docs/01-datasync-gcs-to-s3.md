@@ -1,6 +1,7 @@
 # Module 1 — GCS에서 S3로 문서 전송 (AWS DataSync)
 
-> **소요 시간**: 약 25분
+> **소요 시간**: 약 10분
+>
 > **목표**: Google Cloud Storage(GCS)에 있는 RAG용 문서를 AWS DataSync를 사용하여 Amazon S3 버킷으로 동기화합니다.
 
 ## 핵심 개념
@@ -49,7 +50,8 @@ HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍입니다.
 | Access Key | _(진행자가 안내)_ |
 | Secret Key | _(진행자가 안내)_ |
 
-> **주의**: HMAC 키를 입력할 때 앞뒤 공백이 들어가지 않도록 주의하세요. 한 글자라도 틀리면 인증 실패가 발생합니다.
+!!! warning "주의"
+    HMAC 키를 입력할 때 앞뒤 공백이 들어가지 않도록 주의하세요. 한 글자라도 틀리면 인증 실패가 발생합니다.
 
 ## 1-3. DataSync — 소스 위치 생성 (GCS)
 
@@ -125,8 +127,9 @@ HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍입니다.
 | Schedule | **Not scheduled** (기본값) |
 | 나머지 | 기본값 유지 |
 
-> **주의**: Object tags(객체 태그 보존) 옵션이 보이면 반드시 **체크 해제**하세요.
-> GCS는 S3 태그를 지원하지 않기 때문에 체크되어 있으면 전송이 실패합니다.
+!!! danger "필수 확인"
+    Object tags(객체 태그 보존) 옵션이 보이면 반드시 **체크 해제**하세요.
+    GCS는 S3 태그를 지원하지 않기 때문에 체크되어 있으면 전송이 실패합니다.
 
 > **참고**: Enhanced(향상됨) 모드는 에이전트 없이 S3와 다른 클라우드 간 직접 전송을 지원합니다.
 > 기본(Basic) 모드보다 성능이 높고, 태스크 생성 후 모드 변경은 불가합니다.
@@ -162,8 +165,140 @@ HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍입니다.
 
 ## 폴백 플랜
 
-> DataSync 설정에 어려움이 있는 경우, 진행자가 **이미 문서가 업로드된 S3 버킷 정보**를 안내합니다.
-> 해당 버킷을 사용하여 Module 2로 바로 진행할 수 있습니다.
+!!! tip "폴백"
+    DataSync 설정에 어려움이 있는 경우, 진행자가 **이미 문서가 업로드된 S3 버킷 정보**를 안내합니다.
+    해당 버킷을 사용하여 Module 2로 바로 진행할 수 있습니다.
+
+??? example "CLI 스크립트로 자동 구축 (복사/붙여넣기용)"
+
+    콘솔 대신 AWS CLI로 Module 1 전체를 자동 실행할 수 있습니다.
+    아래 스크립트를 터미널에 복사하여 실행하세요.
+
+    **사전 요구사항**: AWS CLI v2 설치 및 `aws configure` 완료, 리전 `ap-northeast-2`
+
+    **실행 방법**:
+    ```bash
+    chmod +x scripts/setup-module1-datasync.sh
+    ./scripts/setup-module1-datasync.sh
+    ```
+
+    **전체 스크립트**:
+    ```bash
+    #!/bin/bash
+    set -euo pipefail
+
+    REGION="ap-northeast-2"
+
+    echo "============================================"
+    echo "  Module 1 — GCS → S3 전송 (자동 구축)"
+    echo "============================================"
+
+    # ─── 사용자 입력 ─────────────────────────────────────────
+    read -rp "S3 버킷 이름 (예: scd26-handson-rag-docs-홍길동): " S3_BUCKET
+    read -rp "GCS 버킷 이름 (진행자가 안내한 값): " GCS_BUCKET
+    read -rp "GCS 폴더 경로 (기본값: /sample-docs/): " GCS_FOLDER
+    GCS_FOLDER="${GCS_FOLDER:-/sample-docs/}"
+    read -rp "HMAC Access Key (진행자가 안내한 값): " HMAC_ACCESS_KEY
+    read -rsp "HMAC Secret Key (진행자가 안내한 값): " HMAC_SECRET_KEY
+    echo ""
+
+    # ─── Step 1: S3 버킷 생성 ────────────────────────────────
+    echo "━━━ [1/4] S3 버킷 생성 ━━━"
+    aws s3api create-bucket \
+      --bucket "$S3_BUCKET" \
+      --region "$REGION" \
+      --create-bucket-configuration LocationConstraint="$REGION" \
+      --output text
+    echo "✓ S3 버킷 생성 완료: $S3_BUCKET"
+
+    # ─── Step 2: DataSync IAM 역할 생성 ──────────────────────
+    echo "━━━ [2/4] DataSync용 IAM 역할 생성 ━━━"
+    DATASYNC_ROLE_NAME="DataSyncS3Role-scd26-handson"
+
+    TRUST_POLICY='{
+      "Version": "2012-10-17",
+      "Statement": [{
+        "Effect": "Allow",
+        "Principal": { "Service": "datasync.amazonaws.com" },
+        "Action": "sts:AssumeRole"
+      }]
+    }'
+
+    DATASYNC_ROLE_ARN=$(aws iam create-role \
+      --role-name "$DATASYNC_ROLE_NAME" \
+      --assume-role-policy-document "$TRUST_POLICY" \
+      --query 'Role.Arn' --output text 2>/dev/null) || \
+    DATASYNC_ROLE_ARN=$(aws iam get-role \
+      --role-name "$DATASYNC_ROLE_NAME" \
+      --query 'Role.Arn' --output text)
+
+    aws iam put-role-policy \
+      --role-name "$DATASYNC_ROLE_NAME" \
+      --policy-name "S3Access" \
+      --policy-document '{
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": ["s3:GetBucketLocation","s3:ListBucket","s3:ListBucketMultipartUploads"],
+            "Resource": "arn:aws:s3:::'"$S3_BUCKET"'"
+          },
+          {
+            "Effect": "Allow",
+            "Action": ["s3:AbortMultipartUpload","s3:DeleteObject","s3:GetObject",
+                       "s3:ListMultipartUploadParts","s3:PutObject",
+                       "s3:GetObjectTagging","s3:PutObjectTagging"],
+            "Resource": "arn:aws:s3:::'"$S3_BUCKET"'/*"
+          }
+        ]
+      }'
+    echo "✓ IAM 역할 생성 완료"
+    sleep 10
+
+    # ─── Step 3: DataSync 위치 생성 ──────────────────────────
+    echo "━━━ [3/4] DataSync 위치 생성 ━━━"
+    SOURCE_LOCATION_ARN=$(aws datasync create-location-object-storage \
+      --server-hostname "storage.googleapis.com" \
+      --server-protocol "HTTPS" --server-port 443 \
+      --bucket-name "$GCS_BUCKET" --subdirectory "$GCS_FOLDER" \
+      --access-key "$HMAC_ACCESS_KEY" --secret-key "$HMAC_SECRET_KEY" \
+      --region "$REGION" --query 'LocationArn' --output text)
+
+    DEST_LOCATION_ARN=$(aws datasync create-location-s3 \
+      --s3-bucket-arn "arn:aws:s3:::$S3_BUCKET" \
+      --s3-config "BucketAccessRoleArn=$DATASYNC_ROLE_ARN" \
+      --region "$REGION" --query 'LocationArn' --output text)
+    echo "✓ 소스/대상 위치 생성 완료"
+
+    # ─── Step 4: DataSync 태스크 생성 및 실행 ────────────────
+    echo "━━━ [4/4] DataSync 태스크 생성 및 실행 ━━━"
+    TASK_ARN=$(aws datasync create-task \
+      --source-location-arn "$SOURCE_LOCATION_ARN" \
+      --destination-location-arn "$DEST_LOCATION_ARN" \
+      --name "scd26-gcs-to-s3-transfer" \
+      --options '{"VerifyMode":"ONLY_FILES_TRANSFERRED","OverwriteMode":"ALWAYS",
+                  "Atime":"BEST_EFFORT","Mtime":"PRESERVE",
+                  "PreserveDeletedFiles":"PRESERVE","TransferMode":"ALL"}' \
+      --task-mode "ENHANCED" \
+      --region "$REGION" --query 'TaskArn' --output text)
+
+    EXECUTION_ARN=$(aws datasync start-task-execution \
+      --task-arn "$TASK_ARN" --region "$REGION" \
+      --query 'TaskExecutionArn' --output text)
+
+    echo "  전송 완료 대기 중..."
+    while true; do
+      STATUS=$(aws datasync describe-task-execution \
+        --task-execution-arn "$EXECUTION_ARN" \
+        --region "$REGION" --query 'Status' --output text)
+      [[ "$STATUS" == "SUCCESS" ]] && break
+      [[ "$STATUS" == "ERROR" ]] && echo "✗ 전송 실패" && exit 1
+      sleep 5
+    done
+
+    FILE_COUNT=$(aws s3 ls "s3://$S3_BUCKET/" --region "$REGION" | wc -l | tr -d ' ')
+    echo "✓ DataSync 전송 완료! S3 버킷에 ${FILE_COUNT}개 파일"
+    ```
 
 ---
 

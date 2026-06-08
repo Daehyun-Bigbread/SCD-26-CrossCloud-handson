@@ -1,10 +1,12 @@
 # Module 4 — 리소스 정리
 
-> **소요 시간**: 약 15분
+> **소요 시간**: 약 5분
+>
 > **목표**: 실습에서 생성한 모든 AWS 리소스를 삭제하여 불필요한 과금을 방지합니다.
 
-> **중요**: OpenSearch Serverless는 **시간당 $0.48** (2 OCU)이 과금됩니다.
-> 실습이 끝나면 **즉시** 이 모듈을 진행하세요.
+!!! danger "즉시 진행 필수"
+    OpenSearch Serverless는 **시간당 $0.48** (2 OCU)이 과금됩니다.
+    실습이 끝나면 **즉시** 이 모듈을 진행하세요.
 
 ## 삭제 순서
 
@@ -108,4 +110,4 @@ Bedrock KB와 DataSync가 자동 생성한 IAM 역할을 정리합니다.
 
 **수고하셨습니다!** Cross-Cloud RAG 챗봇 핸즈온을 완료했습니다.
 
-**이전**: [Module 3 — RAG 챗봇 테스트](03-chatbot-test.md) | **처음으로**: [README](../README.md)
+**이전**: [Module 3 — RAG 챗봇 테스트](03-chatbot-test.md) | **처음으로**: [Home](index.md)

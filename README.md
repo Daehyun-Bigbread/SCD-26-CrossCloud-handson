@@ -6,7 +6,7 @@ Google Cloud Storage(GCS)에 저장된 문서를 AWS DataSync로 Amazon S3에 �
 
 ## 아키텍처
 
-![Cross-Cloud RAG Architecture](handson-architecture.png)
+![Cross-Cloud RAG Architecture](docs/images/architecture.png)
 
 ## 실습 구성
 

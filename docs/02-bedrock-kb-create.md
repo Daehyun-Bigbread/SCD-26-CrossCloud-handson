@@ -1,6 +1,7 @@
 # Module 2 — Amazon Bedrock Knowledge Bases 생성
 
-> **소요 시간**: 약 30분
+> **소요 시간**: 약 15분
+>
 > **목표**: S3에 저장된 문서를 데이터 소스로 하는 Bedrock Knowledge Base를 생성하고, 문서를 임베딩하여 벡터 인덱스로 동기화합니다.
 
 ## 핵심 개념
@@ -83,8 +84,9 @@ S3 (문서) → Bedrock KB → [파싱 → 청킹 → 임베딩 → 벡터 저�
 - 모든 설정을 확인하고 **지식 기반 생성** 클릭
 - Knowledge Base 생성에 약 **3~5분**이 소요됩니다
 
-> **주의**: OpenSearch Serverless 컬렉션이 함께 생성되므로 이 시점부터 **시간당 과금**이 시작됩니다.
-> 실습이 끝나면 반드시 [Module 4 — 리소스 정리](04-cleanup.md)를 진행하세요.
+!!! danger "과금 주의"
+    OpenSearch Serverless 컬렉션이 함께 생성되므로 이 시점부터 **시간당 과금**이 시작됩니다.
+    실습이 끝나면 반드시 [Module 4 — 리소스 정리](04-cleanup.md)를 진행하세요.
 
 ## 2-2. 데이터 소스 동기화 (Sync)
 
@@ -163,6 +165,175 @@ Bedrock KB가 내부적으로 수행하는 RAG 파이프라인:
 | Sync 시 문서 0건 | 폴더 경로 오류 | S3 URI가 `s3://버킷명/`인지 확인 (버킷 루트) |
 | 테스트 시 "모델 접근 불가" | Bedrock 모델 미승인 | Module 0의 모델 액세스 상태 재확인 |
 | 리전 불일치 | 다른 리전에서 KB 생성 | 콘솔 우측 상단 리전이 `ap-northeast-2`인지 확인 |
+
+??? example "CLI 스크립트로 자동 구축 (복사/붙여넣기용)"
+
+    콘솔 대신 AWS CLI로 Module 2 전체를 자동 실행할 수 있습니다.
+    아래 스크립트를 터미널에 복사하여 실행하세요.
+
+    **사전 요구사항**: Module 1 완료 (S3 버킷에 문서 존재), Bedrock 모델 액세스 승인 완료
+
+    **실행 방법**:
+    ```bash
+    chmod +x scripts/setup-module2-bedrock-kb.sh
+    ./scripts/setup-module2-bedrock-kb.sh
+    ```
+
+    **전체 스크립트**:
+    ```bash
+    #!/bin/bash
+    set -euo pipefail
+
+    REGION="ap-northeast-2"
+
+    echo "============================================"
+    echo "  Module 2 — Bedrock Knowledge Base 생성"
+    echo "============================================"
+
+    # ─── 사용자 입력 ─────────────────────────────────────────
+    read -rp "S3 버킷 이름 (Module 1에서 생성한 버킷): " S3_BUCKET
+
+    FILE_COUNT=$(aws s3 ls "s3://$S3_BUCKET/" --region "$REGION" 2>/dev/null | wc -l | tr -d ' ')
+    if [[ "$FILE_COUNT" -eq 0 ]]; then
+      echo "✗ S3 버킷에 파일이 없습니다. Module 1을 먼저 실행하세요."
+      exit 1
+    fi
+    echo "✓ S3 버킷 확인: ${FILE_COUNT}개 파일"
+
+    # ─── Step 1: Bedrock KB용 IAM 역할 생성 ──────────────────
+    echo "━━━ [1/4] Bedrock KB용 IAM 역할 생성 ━━━"
+    ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+    KB_ROLE_NAME="AmazonBedrockKBRole-scd26-handson"
+
+    KB_ROLE_ARN=$(aws iam create-role \
+      --role-name "$KB_ROLE_NAME" \
+      --assume-role-policy-document '{
+        "Version": "2012-10-17",
+        "Statement": [{
+          "Effect": "Allow",
+          "Principal": { "Service": "bedrock.amazonaws.com" },
+          "Action": "sts:AssumeRole"
+        }]
+      }' \
+      --query 'Role.Arn' --output text 2>/dev/null) || \
+    KB_ROLE_ARN=$(aws iam get-role \
+      --role-name "$KB_ROLE_NAME" \
+      --query 'Role.Arn' --output text)
+
+    aws iam put-role-policy \
+      --role-name "$KB_ROLE_NAME" \
+      --policy-name "BedrockKBAccess" \
+      --policy-document '{
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": ["s3:GetObject","s3:ListBucket"],
+            "Resource": ["arn:aws:s3:::'"$S3_BUCKET"'","arn:aws:s3:::'"$S3_BUCKET"'/*"]
+          },
+          {
+            "Effect": "Allow",
+            "Action": ["bedrock:InvokeModel"],
+            "Resource": "arn:aws:bedrock:'"$REGION"'::foundation-model/amazon.titan-embed-text-v2:0"
+          }
+        ]
+      }'
+
+    aws iam put-role-policy \
+      --role-name "$KB_ROLE_NAME" \
+      --policy-name "BedrockKBAOSS" \
+      --policy-document '{
+        "Version": "2012-10-17",
+        "Statement": [{
+          "Effect": "Allow",
+          "Action": ["aoss:APIAccessAll"],
+          "Resource": "arn:aws:aoss:'"$REGION"':'"$ACCOUNT_ID"':collection/*"
+        }]
+      }'
+    echo "✓ IAM 역할 생성 완료"
+    sleep 15
+
+    # ─── Step 2: Knowledge Base 생성 ─────────────────────────
+    echo "━━━ [2/4] Knowledge Base 생성 (3~5분 소요) ━━━"
+    KB_RESULT=$(aws bedrock-agent create-knowledge-base \
+      --name "scd26-crosscloud-rag-kb" \
+      --description "Cross-Cloud RAG 핸즈온 KB" \
+      --role-arn "$KB_ROLE_ARN" \
+      --knowledge-base-configuration '{
+        "type": "VECTOR",
+        "vectorKnowledgeBaseConfiguration": {
+          "embeddingModelArn": "arn:aws:bedrock:'"$REGION"'::foundation-model/amazon.titan-embed-text-v2:0",
+          "embeddingModelConfiguration": {
+            "bedrockEmbeddingModelConfiguration": {
+              "embeddingDataType": "FLOAT32", "dimensions": 1024
+            }
+          }
+        }
+      }' \
+      --storage-configuration '{
+        "type": "OPENSEARCH_SERVERLESS",
+        "opensearchServerlessConfiguration": {
+          "collectionArn": "auto",
+          "fieldMapping": {
+            "metadataField": "AMAZON_BEDROCK_METADATA",
+            "textField": "AMAZON_BEDROCK_TEXT",
+            "vectorField": "bedrock-knowledge-base-default-vector"
+          },
+          "vectorIndexName": "bedrock-knowledge-base-default-index"
+        }
+      }' \
+      --region "$REGION" --output json 2>&1)
+
+    KB_ID=$(echo "$KB_RESULT" | python3 -c \
+      "import sys,json; print(json.load(sys.stdin)['knowledgeBase']['knowledgeBaseId'])" 2>/dev/null)
+
+    if [[ -z "$KB_ID" ]]; then
+      echo "⚠ CLI 자동 생성 실패 — 콘솔에서 수동 생성하세요."
+      echo "  Amazon Bedrock → 지식 기반 → 지식 기반 생성"
+      exit 0
+    fi
+
+    echo "  KB 생성 시작 (ID: $KB_ID) — ACTIVE 상태 대기 중..."
+    while true; do
+      KB_STATUS=$(aws bedrock-agent get-knowledge-base \
+        --knowledge-base-id "$KB_ID" --region "$REGION" \
+        --query 'knowledgeBase.status' --output text)
+      [[ "$KB_STATUS" == "ACTIVE" ]] && break
+      [[ "$KB_STATUS" == "FAILED" ]] && echo "✗ KB 생성 실패" && exit 1
+      sleep 10
+    done
+    echo "✓ Knowledge Base 생성 완료!"
+
+    # ─── Step 3: 데이터 소스 추가 ────────────────────────────
+    echo "━━━ [3/4] 데이터 소스 추가 ━━━"
+    DS_ID=$(aws bedrock-agent create-data-source \
+      --knowledge-base-id "$KB_ID" --name "s3-synced-docs" \
+      --data-source-configuration '{
+        "type": "S3",
+        "s3Configuration": { "bucketArn": "arn:aws:s3:::'"$S3_BUCKET"'" }
+      }' \
+      --region "$REGION" --query 'dataSource.dataSourceId' --output text)
+    echo "✓ 데이터 소스 추가 완료"
+
+    # ─── Step 4: 데이터 소스 동기화 ──────────────────────────
+    echo "━━━ [4/4] 데이터 소스 동기화 (3~5분 소요) ━━━"
+    aws bedrock-agent start-ingestion-job \
+      --knowledge-base-id "$KB_ID" --data-source-id "$DS_ID" \
+      --region "$REGION" --output text > /dev/null
+
+    while true; do
+      SYNC_STATUS=$(aws bedrock-agent list-ingestion-jobs \
+        --knowledge-base-id "$KB_ID" --data-source-id "$DS_ID" \
+        --region "$REGION" \
+        --query 'ingestionJobSummaries[0].status' --output text)
+      [[ "$SYNC_STATUS" == "COMPLETE" ]] && break
+      [[ "$SYNC_STATUS" == "FAILED" ]] && echo "✗ 동기화 실패" && exit 1
+      sleep 10
+    done
+    echo "✓ 데이터 소스 동기화 완료!"
+    echo ""
+    echo "다음 단계: AWS 콘솔에서 Module 3 — RAG 챗봇 테스트 진행"
+    ```
 
 ---
 

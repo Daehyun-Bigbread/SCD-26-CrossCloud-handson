@@ -1,0 +1,903 @@
+/* ============================================================
+   AWS Skill Builder Design System
+   ============================================================ */
+@font-face {
+  font-family: "Amazon Ember";
+  src: url("../fonts/AmazonEmber_W_Lt.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Amazon Ember";
+  src: url("../fonts/AmazonEmber_W_Rg.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Amazon Ember";
+  src: url("../fonts/AmazonEmber_W_Bd.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Amazon Ember";
+  src: url("../fonts/AmazonEmber_W_He.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --md-text-font: "Amazon Ember", Helvetica, sans-serif;
+  --md-code-font: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --asb-dark: #16191f;
+  --asb-text: #16191f;
+  --asb-blue: #0073bb;
+  --asb-orange: #ff9900;
+  --asb-orange-hover: #e88b00;
+  --asb-purple: #4b3bb3;
+  --asb-teal: #245869;
+  --asb-border: #d1d5db;
+  --asb-border-light: #e5e7eb;
+  --asb-gray: #6b7280;
+  --asb-gray-light: #9ca3af;
+  --asb-bg-sidebar: #ffffff;
+  --asb-bg-callout: #eef2f6;
+  --asb-bg-page: #fafafa;
+
+  --md-primary-fg-color: #1c222b;
+  --md-primary-bg-color: #ffffff;
+  --md-accent-fg-color: #0073bb;
+  --md-accent-bg-color: #0073bb10;
+  --md-default-bg-color: #fafafa;
+
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
+  -webkit-tap-highlight-color: transparent;
+  scroll-padding-top: 57px;
+}
+
+[data-md-color-scheme="slate"] {
+  --asb-dark: #e5e7eb;
+  --asb-text: #d1d5db;
+  --asb-gray: #9ca3af;
+  --asb-gray-light: #6b7280;
+  --asb-bg-sidebar: #2e303e;
+  --asb-bg-callout: #363846;
+  --asb-bg-page: var(--md-default-bg-color);
+  --asb-border: #374151;
+  --asb-border-light: #1f2937;
+  --md-primary-fg-color: #1c222b;
+  --md-accent-fg-color: #0073bb;
+  --md-default-bg-color: #2e303e;
+}
+
+[data-md-color-scheme="slate"] .asb-resume-card,
+[data-md-color-scheme="slate"] .asb-module-panel,
+[data-md-color-scheme="slate"] .workshop-progress {
+  background: #363846;
+  border-color: #444759;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-md-color-scheme="slate"] .progress-steps .step {
+  background: #363846;
+}
+
+[data-md-color-scheme="slate"] .asb-btn-secondary {
+  background: transparent;
+  border-color: #5b9fd6;
+  color: #5b9fd6;
+}
+
+[data-md-color-scheme="slate"] .asb-timeline-item.is-active .asb-timeline-dot {
+  background: #363846;
+}
+
+/* ============================================================
+   Header — dark nav bar + orange return pill
+   ============================================================ */
+.md-header {
+  background-color: #1c222b;
+  border-bottom: 1px solid #374151;
+}
+
+.md-tabs {
+  background-color: #1c222b;
+}
+
+.asb-logo {
+  display: flex !important;
+  align-items: center;
+  gap: 0.35rem;
+  width: auto !important;
+  margin-right: 0.5rem;
+}
+
+.asb-logo-text {
+  display: none;
+}
+
+.asb-return-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--asb-orange);
+  color: #000000;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.375rem 1rem;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  margin-right: auto;
+  transition: background 0.15s;
+  order: 1;
+}
+
+.asb-return-btn:hover {
+  background: var(--asb-orange-hover);
+  color: #000000;
+}
+
+.asb-return-icon {
+  font-size: 0.95rem;
+}
+
+.asb-home .md-tabs {
+  display: none;
+}
+
+.asb-home #workshop-progress-bar {
+  display: none !important;
+}
+
+/* ============================================================
+   Sidebar — teal header + white list (lesson view)
+   ============================================================ */
+.md-nav--primary > .md-nav__title {
+  display: none;
+}
+
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary {
+    display: block !important;
+  }
+
+  .md-nav--primary > .md-nav {
+    display: block !important;
+  }
+
+  .md-nav--primary .md-nav__item {
+    display: block !important;
+  }
+}
+
+/* sidebar title ::after — defined in the progress bar section below */
+
+.md-sidebar--primary .md-sidebar__inner {
+  background: var(--asb-bg-sidebar);
+  border-right: 1px solid var(--asb-border);
+}
+
+.md-nav--primary .md-nav__item--nested > .md-nav__link {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--asb-gray-light);
+  padding: 0.5rem 1.25rem;
+}
+
+.md-nav--primary .md-nav__link {
+  position: relative;
+  padding: 0.6rem 0.75rem 0.6rem 1.75rem;
+  font-size: 0.78rem;
+  color: var(--asb-gray);
+  transition: background 0.1s;
+}
+
+.md-nav--primary .md-nav__link:hover {
+  background: var(--asb-border);
+}
+
+.md-nav--primary .md-nav__link::before {
+  content: "≡";
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--asb-gray-light);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.md-nav--primary .md-nav__link--active {
+  font-weight: 600;
+  color: var(--asb-dark);
+  background: rgba(75, 59, 179, 0.04);
+  border-left: 2px solid var(--asb-purple);
+}
+
+.md-nav--primary .md-nav__link--active::after {
+  display: none;
+}
+
+.md-nav__link.module-done::before {
+  content: "≡";
+  color: var(--asb-blue);
+}
+
+.md-nav__link.module-done::after {
+  display: none;
+}
+
+/* ============================================================
+   Content typography — matching reference
+   ============================================================ */
+.md-typeset {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--asb-text);
+}
+
+.md-typeset h1 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--asb-dark);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.md-typeset h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--asb-dark);
+  letter-spacing: -0.01em;
+  margin-top: 2rem;
+}
+
+.md-typeset h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--asb-dark);
+}
+
+/* ============================================================
+   Module content — purple title accent + callout boxes
+   ============================================================ */
+.md-content__inner > h1:first-child {
+  position: relative;
+  padding-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  border: none;
+}
+
+.md-content__inner > h1:first-child::after {
+  content: "";
+  display: block;
+  width: 8rem;
+  height: 4px;
+  background: var(--asb-purple);
+  margin-top: 1.5rem;
+}
+
+.md-content__inner > h1:first-child::before {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: -1.5rem;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--asb-border);
+}
+
+.md-content__inner {
+  padding: 2rem 1.5rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.md-content {
+  background: var(--asb-bg-page);
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 0;
+  border-left: 4px solid var(--asb-blue);
+  background: var(--asb-bg-callout);
+  box-shadow: none;
+  font-size: 0.78rem;
+}
+
+.md-typeset .admonition.warning,
+.md-typeset details.warning {
+  border-left-color: var(--asb-orange);
+}
+
+.md-typeset .admonition.warning > .admonition-title,
+.md-typeset details.warning > summary {
+  background: rgba(255, 153, 0, 0.08);
+}
+
+/* ============================================================
+   Course Overview Page (Home)
+   ============================================================ */
+.asb-course-page {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.asb-course-header {
+  margin-bottom: 1.5rem;
+}
+
+.asb-course-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--asb-dark);
+  line-height: 1.3;
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.asb-course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--asb-gray);
+}
+
+.asb-meta-sep {
+  color: var(--asb-gray-light);
+  margin: 0 0.15rem;
+}
+
+.asb-meta-star {
+  color: var(--asb-orange);
+}
+
+/* Resume Card */
+.asb-resume-card {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  border: 1px solid var(--asb-border);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  background: var(--md-primary-bg-color);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s;
+}
+
+.asb-resume-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.asb-resume-illustration {
+  flex-shrink: 0;
+  width: 160px;
+}
+
+.asb-resume-illustration img {
+  width: 100%;
+  height: auto;
+}
+
+.asb-resume-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--asb-dark);
+  margin: 0 0 0.25rem;
+}
+
+.asb-resume-module {
+  font-size: 0.8rem;
+  color: var(--asb-gray);
+  margin: 0 0 1rem;
+}
+
+/* Buttons */
+.asb-btn {
+  display: inline-block;
+  padding: 0.45rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 2px solid transparent;
+}
+
+.asb-btn-secondary {
+  background: var(--md-primary-bg-color);
+  color: var(--asb-blue);
+  border-color: var(--asb-blue);
+}
+
+.asb-btn-secondary:hover {
+  background: rgba(0, 115, 187, 0.1);
+  color: var(--asb-blue);
+}
+
+.asb-btn-primary {
+  background: var(--asb-orange);
+  color: #000000;
+  border-color: var(--asb-orange);
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.asb-btn-primary:hover {
+  background: var(--asb-orange-hover);
+  border-color: var(--asb-orange-hover);
+  color: #000000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Tabs */
+.asb-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--asb-border);
+  margin-bottom: 1.5rem;
+}
+
+.asb-tab {
+  background: none;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--asb-gray);
+  cursor: pointer;
+  position: relative;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+
+.asb-tab:hover {
+  color: var(--asb-dark);
+}
+
+.asb-tab-active {
+  color: var(--asb-blue);
+}
+
+.asb-tab-active:hover {
+  color: var(--asb-blue);
+}
+
+.asb-tab-active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--asb-blue);
+  border-radius: 2px 2px 0 0;
+}
+
+.asb-hidden {
+  display: none !important;
+}
+
+/* Overview two-column layout */
+.asb-overview-layout {
+  display: grid;
+  grid-template-columns: min(280px, 30%) 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Timeline stepper */
+.asb-timeline {
+  position: relative;
+  padding-left: 0;
+}
+
+.asb-timeline-item {
+  position: relative;
+  padding: 0 0 1.5rem 1.75rem;
+  cursor: pointer;
+  border: none;
+  background: none;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.asb-timeline-item:hover {
+  background: rgba(0, 115, 187, 0.04);
+}
+
+.asb-timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.asb-timeline-item::before {
+  content: "";
+  position: absolute;
+  left: 0.45rem;
+  top: 1.25rem;
+  bottom: 0;
+  width: 2px;
+  background: var(--asb-border);
+}
+
+.asb-timeline-item:last-child::before {
+  display: none;
+}
+
+.asb-timeline-dot {
+  position: absolute;
+  left: 0;
+  top: 0.15rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--asb-gray-light);
+  border: 2px solid var(--asb-gray-light);
+}
+
+.asb-timeline-item.is-active .asb-timeline-dot {
+  background: #ffffff;
+  border-color: var(--asb-blue);
+  box-shadow: inset 0 0 0 3px var(--asb-blue);
+}
+
+.asb-timeline-item.is-completed .asb-timeline-dot {
+  background: var(--asb-blue);
+  border-color: var(--asb-blue);
+}
+
+.asb-timeline-status {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--asb-gray-light);
+  margin-bottom: 0.15rem;
+}
+
+.asb-timeline-item.is-active .asb-timeline-status {
+  color: var(--asb-blue);
+}
+
+.asb-timeline-title {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--asb-dark);
+  line-height: 1.4;
+}
+
+.asb-timeline-item.is-active .asb-timeline-title {
+  color: var(--asb-blue);
+  font-weight: 700;
+}
+
+/* Module detail panel */
+.asb-module-panel {
+  border: 1px solid var(--asb-border);
+  border-radius: 12px;
+  padding: 1.5rem 1.75rem;
+  background: var(--md-primary-bg-color);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.asb-panel-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--asb-dark);
+  margin: 0 0 1rem;
+}
+
+.asb-panel-sections {
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--asb-border);
+}
+
+.asb-panel-section {
+  padding: 0.85rem 0.5rem;
+  border-bottom: 1px solid var(--asb-border);
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.asb-panel-section:hover {
+  background: rgba(0, 115, 187, 0.03);
+}
+
+.asb-panel-section:last-child {
+  border-bottom: none;
+}
+
+.asb-panel-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--asb-dark);
+  margin: 0;
+}
+
+.asb-panel-section-sub {
+  font-size: 0.72rem;
+  color: var(--asb-gray);
+  margin: 0.15rem 0 0;
+}
+
+.asb-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.asb-callout {
+  padding: 2rem 2.5rem;
+  border-radius: 0;
+  border-left: none;
+  background: var(--asb-bg-callout);
+  font-size: 0.78rem;
+  line-height: 1.7;
+  margin-top: 2rem;
+}
+
+/* Architecture */
+.architecture-diagram {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.architecture-diagram img {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--asb-border);
+}
+
+/* ============================================================
+   Progress bar (module pages)
+   ============================================================ */
+.workshop-progress {
+  background: var(--md-primary-bg-color);
+  border: 1px solid var(--asb-border);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.progress-label {
+  font-weight: 700;
+}
+
+.progress-count {
+  color: var(--asb-gray);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-track {
+  height: 6px;
+  background: var(--asb-border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--asb-blue);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.progress-steps .step {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 2px solid var(--asb-border);
+  color: var(--asb-gray);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  background: var(--md-primary-bg-color);
+}
+
+.progress-steps .step:hover {
+  border-color: var(--asb-blue);
+  color: var(--asb-blue);
+}
+
+.progress-steps .step.completed {
+  background: var(--asb-blue);
+  border-color: var(--asb-blue);
+  color: #ffffff;
+}
+
+/* Module complete button */
+.module-complete-section {
+  text-align: center;
+  padding: 1.5rem 0 0.5rem;
+}
+
+.module-complete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid var(--asb-blue);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--asb-blue);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.module-complete-btn:hover {
+  background: var(--asb-blue);
+  color: #ffffff;
+}
+
+.module-complete-btn.is-completed {
+  background: var(--asb-blue);
+  color: #ffffff;
+  border-color: var(--asb-blue);
+}
+
+/* Tables — covers both markdown-generated and raw HTML <table> elements */
+.md-typeset table:not([class]) th,
+.md-typeset table th {
+  background-color: #1c222b;
+  color: #ffffff;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th,
+[data-md-color-scheme="slate"] .md-typeset table th {
+  background-color: #374151;
+}
+
+.md-typeset table:not([class]),
+.md-typeset table {
+  font-size: 0.78rem;
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid var(--asb-border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.md-typeset table:not([class]) th,
+.md-typeset table:not([class]) td,
+.md-typeset table th,
+.md-typeset table td {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--asb-border);
+  vertical-align: top;
+  text-align: left;
+}
+
+.md-typeset table:not([class]) tbody tr:nth-child(even),
+.md-typeset table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) tbody tr:nth-child(even),
+[data-md-color-scheme="slate"] .md-typeset table tbody tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.md-typeset table:not([class]) tbody tr:hover,
+.md-typeset table tbody tr:hover {
+  background-color: rgba(0, 115, 187, 0.04);
+}
+
+.service-icon {
+  width: 28px;
+  height: 28px;
+  vertical-align: middle;
+  margin-right: 0.4rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.md-typeset code {
+  border-radius: 4px;
+}
+
+.md-footer {
+  background-color: #1c222b;
+}
+
+/* Home page: widen inner to let .asb-course-page control layout */
+.asb-home .md-content__inner {
+  max-width: 960px;
+}
+
+/* Home page: hide default h1 */
+.asb-home .md-content__inner > h1:first-child {
+  display: none;
+}
+
+.asb-home .md-content__inner > h1:first-child::after,
+.asb-home .md-content__inner > h1:first-child::before {
+  display: none;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+  .asb-overview-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .asb-resume-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.25rem;
+  }
+
+  .asb-course-title {
+    font-size: 1.35rem;
+  }
+
+  .asb-return-btn {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.75rem;
+  }
+
+  .md-typeset h1 {
+    font-size: 1.75rem;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .asb-course-meta {
+    font-size: 0.78rem;
+  }
+}
+
+/* ============================================================
+   Warning callout — orange left accent
+   ============================================================ */
+.asb-callout-warning {
+  border-left: 4px solid var(--asb-orange);
+  padding-left: calc(2.5rem - 4px);
+}
+

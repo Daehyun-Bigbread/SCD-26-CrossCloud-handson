@@ -1,6 +1,7 @@
 # Module 3 — RAG 챗봇 테스트
 
-> **소요 시간**: 약 15분
+> **소요 시간**: 약 10분
+>
 > **목표**: Knowledge Base 테스트 패널에서 RAG 챗봇을 테스트하고, RAG 유무에 따른 응답 차이를 비교합니다.
 
 ## 3-1. Knowledge Base 테스트 패널 사용
@@ -127,6 +128,7 @@ KB 테스트 패널 (Claude 3.5 Sonnet)
 
 ---
 
-> **중요**: 다음 모듈에서 리소스를 삭제합니다. 과금 방지를 위해 반드시 진행하세요!
+!!! danger "중요"
+    다음 모듈에서 리소스를 삭제합니다. 과금 방지를 위해 반드시 진행하세요!
 
 **이전**: [Module 2 — Bedrock Knowledge Bases](02-bedrock-kb-create.md) | **다음**: [Module 4 — 리소스 정리](04-cleanup.md)

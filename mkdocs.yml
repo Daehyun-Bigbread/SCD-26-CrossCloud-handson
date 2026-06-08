@@ -1,0 +1,84 @@
+site_name: Cross-Cloud RAG Workshop
+site_description: AWS Student Community Day - Amazon Bedrock으로 만드는 Cross-Cloud RAG 챗봇
+site_url: https://daehyun-bigbread.github.io/SCD-26-CrossCloud-handson/
+repo_url: https://github.com/Daehyun-Bigbread/SCD-26-CrossCloud-handson
+repo_name: SCD-26-CrossCloud-handson
+
+theme:
+  name: material
+  language: ko
+  palette:
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: 다크 모드로 전환
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: 라이트 모드로 전환
+  font: false
+  features:
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+  custom_dir: overrides
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/cloud-sync
+
+nav:
+  - Home: index.md
+  - "Module 0 - 사전 준비": 00-prerequisites.md
+  - "Module 1 - GCS → S3 전송": 01-datasync-gcs-to-s3.md
+  - "Module 2 - Bedrock Knowledge Bases": 02-bedrock-kb-create.md
+  - "Module 3 - RAG 챗봇 테스트": 03-chatbot-test.md
+  - "Module 4 - 리소스 정리": 04-cleanup.md
+
+plugins: []
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.mark
+  - pymdownx.critic
+  - pymdownx.keys
+  - attr_list
+  - md_in_html
+  - tables
+  - def_list
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - toc:
+      permalink: true
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/progress.js
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Daehyun-Bigbread/SCD-26-CrossCloud-handson
+
+copyright: Copyright &copy; 2026 AWS Student Community Day
