@@ -10,5 +10,8 @@ Thumbs.db
 .idea/
 *.swp
 
+# Work log (local only)
+WORK_LOG.md
+
 # MkDocs build output
 site/
