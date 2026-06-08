@@ -13,12 +13,12 @@ Google Cloud Storage(GCS)에 저장된 문서를 AWS DataSync로 Amazon S3에 �
 | 모듈 | 내용 | 소요 시간 |
 |------|------|----------|
 | [Module 0 — 사전 준비](docs/00-prerequisites.md) | AWS 계정 설정, Bedrock 모델 액세스 요청 | **사전 완료** |
-| [Module 1 — GCS → S3 전송](docs/01-datasync-gcs-to-s3.md) | AWS DataSync로 GCS 문서를 S3로 동기화 | ~25분 |
-| [Module 2 — Bedrock Knowledge Bases](docs/02-bedrock-kb-create.md) | Knowledge Base 생성 & 데이터 소스 동기화 | ~30분 |
-| [Module 3 — RAG 챗봇 테스트](docs/03-chatbot-test.md) | KB 테스트 패널에서 RAG 챗봇 검증 | ~15분 |
-| [Module 4 — 리소스 정리](docs/04-cleanup.md) | 과금 방지를 위한 리소스 삭제 | ~15분 |
+| [Module 1 — GCS → S3 전송](docs/01-datasync-gcs-to-s3.md) | AWS DataSync로 GCS 문서를 S3로 동기화 | ~10분 |
+| [Module 2 — Bedrock Knowledge Bases](docs/02-bedrock-kb-create.md) | Knowledge Base 생성 & 데이터 소스 동기화 | ~15분 |
+| [Module 3 — RAG 챗봇 테스트](docs/03-chatbot-test.md) | KB 테스트 패널에서 RAG 챗봇 검증 | ~10분 |
+| [Module 4 — 리소스 정리](docs/04-cleanup.md) | 과금 방지를 위한 리소스 삭제 | ~5분 |
 
-**총 소요 시간**: 약 85분 (+ 버퍼 15분)
+**총 소요 시간**: 약 40분
 
 ## 사전 준비 (필수)
 
@@ -56,10 +56,47 @@ Google Cloud Storage(GCS)에 저장된 문서를 AWS DataSync로 Amazon S3에 �
 
 ## 비용 안내
 
-실습 전체 비용은 약 **$1.50** 입니다 (실습 후 즉시 삭제 시).
+이 워크숍은 AWS에서 제공하는 핸즈온 계정을 사용합니다. **개인 계정**으로 진행하는 경우 소량의 비용이 발생할 수 있습니다.
 
 > **중요**: 실습이 끝나면 반드시 [Module 4 — 리소스 정리](docs/04-cleanup.md)를 진행하세요.
 > OpenSearch Serverless는 **시간당 과금**되므로, 삭제하지 않으면 비용이 계속 발생합니다.
+
+## 기술 스택
+
+| 구분 | 기술 |
+|------|------|
+| **워크숍 사이트** | MkDocs Material |
+| **배포** | GitHub Pages |
+| **크로스 클라우드 전송** | AWS DataSync + GCS HMAC 키 |
+| **RAG 파이프라인** | Amazon Bedrock Knowledge Bases |
+| **임베딩 모델** | Amazon Titan Text Embeddings V2 (1024차원) |
+| **벡터 DB** | Amazon OpenSearch Serverless |
+| **생성 모델** | Anthropic Claude 3.5 Sonnet |
+
+## 프로젝트 구조
+
+```
+SCD-26-CrossCloud-handson/
+├── docs/
+│   ├── index.md                    # 워크숍 홈 (MkDocs 진입점)
+│   ├── 00-prerequisites.md         # Module 0 — 사전 준비
+│   ├── 01-datasync-gcs-to-s3.md   # Module 1 — GCS → S3 전송
+│   ├── 02-bedrock-kb-create.md    # Module 2 — Bedrock Knowledge Bases
+│   ├── 03-chatbot-test.md          # Module 3 — RAG 챗봇 테스트
+│   ├── 04-cleanup.md               # Module 4 — 리소스 정리
+│   ├── images/                     # 아키텍처 다이어그램 및 아이콘
+│   ├── javascripts/
+│   │   └── progress.js             # 모듈 진행 상태 추적 (localStorage)
+│   └── stylesheets/
+│       └── extra.css               # AWS Builder Style 커스텀 CSS
+├── scripts/
+│   ├── setup-module1-datasync.sh  # Module 1 CLI 폴백 스크립트
+│   ├── setup-module2-bedrock-kb.sh # Module 2 CLI 폴백 스크립트
+│   └── cleanup-aws.sh             # 리소스 정리 CLI 스크립트
+├── overrides/                      # MkDocs Material 커스텀 HTML
+├── mkdocs.yml                      # MkDocs 설정
+└── requirements.txt                # Python 의존성 (MkDocs)
+```
 
 ## 콘솔 조작이 어려운 경우 (폴백)
 
@@ -77,3 +114,19 @@ AWS CLI가 설치되어 있다면, 스크립트로 각 모듈을 자동 구축�
 ```
 
 > 스크립트 실행 후에도 Module 3 (챗봇 테스트)은 AWS 콘솔에서 직접 진행합니다.
+
+## 로컬에서 워크숍 사이트 실행
+
+```bash
+pip install -r requirements.txt
+mkdocs serve
+```
+
+브라우저에서 `http://127.0.0.1:8000` 으로 접속합니다.
+
+## GitHub Pages 배포
+
+워크숍 사이트는 GitHub Pages로 자동 배포됩니다.
+
+- **URL**: https://daehyun-bigbread.github.io/SCD-26-CrossCloud-handson/
+- **배포 방법**: `mkdocs gh-deploy` 또는 GitHub Actions
