@@ -671,6 +671,29 @@
   border: 1px solid var(--asb-border);
 }
 
+.asb-arch-desc {
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--asb-text);
+  margin: 1rem 0 0.5rem;
+}
+
+.asb-arch-desc ol {
+  margin: 0.5rem 0;
+  padding-left: 1.3rem;
+}
+
+.asb-arch-desc ol li {
+  margin: 0.4rem 0;
+}
+
+.asb-section-sub {
+  font-size: 0.76rem;
+  line-height: 1.6;
+  color: var(--asb-gray);
+  margin: -0.35rem 0 0.85rem;
+}
+
 /* ============================================================
    Progress bar (module pages)
    ============================================================ */

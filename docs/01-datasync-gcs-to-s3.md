@@ -21,7 +21,7 @@ GCS Bucket (소스)  ──── HMAC Key 인증 ────▶  AWS DataSync 
 
 1. AWS 콘솔에서 **S3** 서비스로 이동합니다
 2. **Create bucket** 클릭
-3. 아래 설정으로 버킷을 생성합니다:
+3. 다음과 같이 설정해 버킷을 만듭니다:
 
 | 항목 | 값 |
 |------|-----|
@@ -53,12 +53,12 @@ HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍입니다.
 !!! warning "주의"
     HMAC 키를 입력할 때 앞뒤 공백이 들어가지 않도록 주의하세요. 한 글자라도 틀리면 인증 실패가 발생합니다.
 
-## 1-3. DataSync — 소스 위치 생성 (GCS)
+## 1-3. DataSync 소스 위치 생성 (GCS)
 
 1. AWS 콘솔에서 **DataSync** 서비스로 이동합니다
 2. 좌측 메뉴에서 **Data transfer** → **Locations** 클릭
 3. **Create location** 클릭
-4. 아래 설정을 입력합니다:
+4. 다음과 같이 입력합니다:
 
 | 항목 | 값 |
 |------|-----|
@@ -79,24 +79,24 @@ HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍입니다.
 
 <!-- ![DataSync 소스 위치](images/01-datasync/datasync-source-location.png) -->
 
-## 1-4. DataSync — 대상 위치 생성 (S3)
+## 1-4. DataSync 대상 위치 생성 (S3)
 
 1. **Locations** 페이지에서 다시 **Create location** 클릭
-2. 아래 설정을 입력합니다:
+2. 다음과 같이 입력합니다:
 
 | 항목 | 값 |
 |------|-----|
 | Location type | **Amazon S3** |
 | S3 bucket | 1-1에서 생성한 버킷 선택 |
 | S3 storage class | Standard (기본값) |
-| Folder | _(비워두기 — 버킷 루트에 저장)_ |
+| Folder | _(비워두기: 버킷 루트에 저장)_ |
 | IAM role | **Auto generate** (자동 생성) |
 
 3. **Create location** 클릭
 
 <!-- ![DataSync 대상 위치](images/01-datasync/datasync-dest-location.png) -->
 
-## 1-5. DataSync — 태스크 생성 및 실행
+## 1-5. DataSync 태스크 생성 및 실행
 
 1. 좌측 메뉴에서 **Data transfer** → **Tasks** 클릭
 2. **Create task** 클릭
@@ -117,7 +117,7 @@ HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍입니다.
 
 | 항목 | 값 |
 |------|-----|
-| Task mode | **Enhanced** (향상됨) — 에이전트 없이 S3↔다른 클라우드 전송 지원 |
+| Task mode | **Enhanced** (향상됨): 에이전트 없이 S3와 타 클라우드 간 전송 지원 |
 | Task name | `scd26-gcs-to-s3-transfer` |
 | Transfer mode | **모든 데이터 전송** (기본값) |
 | Verification | **전송된 데이터만 확인** (기본값) |

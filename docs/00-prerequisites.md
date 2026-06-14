@@ -1,14 +1,14 @@
-# Module 0 — 사전 준비
+# Module 0 - 사전 준비
 
-!!! warning "사전 완료 필수"
-    이 모듈은 핸즈온 **최소 24시간 전에** 완료해야 합니다.
-    Bedrock 모델 액세스 승인에 시간이 걸릴 수 있습니다.
+!!! warning "사전 점검 권장"
+    Bedrock 모델 액세스는 대부분 **기본 활성화**되어 있고, Anthropic Claude도 사용 사례 양식을 제출하면 **즉시 부여**됩니다. 다만 신규 계정의 결제 수단 검증, 사용 사례 양식 작성(website URL 필요), 콘솔 반영 지연(수 분) 같은 변수가 있으니 **핸즈온 하루 전쯤 미리** 모델 액세스 상태를 확인해 두세요.
 
 ## 0-1. AWS 계정 준비
 
-AWS 계정이 없는 경우 [https://aws.amazon.com](https://aws.amazon.com)에서 생성합니다.
+AWS 계정이 없는 경우 [https://aws.amazon.com](https://aws.amazon.com) 에서 생성합니다.
 
-> 프리 티어 계정으로 충분합니다. 단, 결제 수단(신용카드) 등록이 필요합니다.
+!!! warning "프리 티어로는 부족합니다"
+    신규/기존 계정 모두 사용할 수 있지만, 이 핸즈온에서 쓰는 **OpenSearch Serverless, AWS DataSync, Amazon Bedrock은 프리 티어로 커버되지 않아 소액의 비용이 발생**합니다. 특히 OpenSearch Serverless는 시간당 과금되므로(약 $0.48/시간), 결제 수단(신용카드) 등록이 필요하며 핸즈온이 끝나면 반드시 [Module 4 — 리소스 정리](04-cleanup.md)를 진행하세요.
 
 !!! danger "필수 확인"
     이 핸즈온은 **IAM 사용자**로 로그인해야 합니다. **루트 사용자(Root user)로는 Bedrock Knowledge Base를 생성할 수 없습니다.**
@@ -16,19 +16,31 @@ AWS 계정이 없는 경우 [https://aws.amazon.com](https://aws.amazon.com)에�
 
 ### IAM 사용자 생성 (루트 사용자인 경우)
 
-1. AWS 콘솔에서 **IAM** 서비스로 이동합니다
-2. 좌측 메뉴에서 **Users** → **Create user** 클릭
-3. 아래 설정으로 생성합니다:
+1. AWS 콘솔에서 **[IAM](https://us-east-1.console.aws.amazon.com/iam/home?region=ap-northeast-2#/home)** 서비스로 이동합니다
+2. 좌측 메뉴에서 **IAM 사용자** → **사용자 생성** 클릭
+
+![IAM 사용자 생성 ](images/00-prerequisites/iam-user.png)
+3. 다음과 같이 설정해 주세요:
 
 | 항목 | 값 |
 |------|-----|
 | User name | `scd26-admin` (또는 원하는 이름) |
-| Console access | **Provide user access to the AWS Management Console** 체크 |
-| Password | 원하는 비밀번호 설정 |
+| Console access | **AWS Management Console에 대한 사용자 액세스 권한 제공 – 선택 사항** 체크 |
+| Password | 콘솔 암호 > 사용자 지정 암호 |
 
-4. **Permissions** 단계에서 **Attach policies directly** → `AdministratorAccess` 선택
-5. **Create user** 클릭
+![IAM 사용자 설장](images/00-prerequisites/password setting.png)
+
+4. **권한 설정** 단계에서 **직접 정책 연결** → `AdministratorAccess` 선택
+
+![IAM 사용자 정책 연결](images/00-prerequisites/admin.png)
+
+5. **다음 > Create user** 클릭
+
+![IAM 사용자 생성 확인](images/00-prerequisites/iam account gen.png)
+
 6. 생성 완료 후, **루트 사용자에서 로그아웃**하고 **IAM 사용자로 다시 로그인**합니다
+
+![IAM 사용자 생성 확인](images/00-prerequisites/account check.png)
 
 > 로그인 URL 형식: `https://{계정ID}.signin.aws.amazon.com/console`
 
@@ -68,7 +80,7 @@ aws --version
 aws configure
 ```
 
-아래 항목을 입력합니다:
+다음과 같이 입력하세요:
 
 ```
 AWS Access Key ID [None]: <위에서 복사한 Access Key ID>
@@ -106,7 +118,7 @@ aws sts get-caller-identity
 
 ## 0-4. Bedrock 모델 액세스 요청
 
-Amazon Bedrock은 Foundation Model에 대한 **별도 액세스 요청**이 필요합니다.
+대부분의 Bedrock 파운데이션 모델은 **기본적으로 활성화**되어 있습니다. 다만 **Anthropic Claude**는 계정(또는 조직)당 1회 **사용 사례 양식(First Time Use)** 작성이 필요하며, 제출하면 바로 사용할 수 있습니다.
 
 ### 요청할 모델
 
@@ -122,12 +134,12 @@ Amazon Bedrock은 Foundation Model에 대한 **별도 액세스 요청**이 필�
 2. 좌측 메뉴에서 **Bedrock configurations** → **Model access**를 클릭합니다
 3. **Modify model access** 버튼을 클릭합니다
 4. 위 표의 모델들을 체크하고 **Next** → **Submit** 합니다
+   - Anthropic Claude를 추가하면 **사용 사례 양식(use case details)** 입력 창이 뜹니다. 용도와 website URL(개인 포트폴리오·GitHub·프로젝트 주소 가능)을 적고 제출하세요.
 
 <!-- ![모델 액세스 요청](images/00-prerequisites/model-access.png) -->
 
-!!! info "승인 소요 시간"
-    Amazon Titan은 즉시 승인, Anthropic Claude는 수 분~수 시간 소요될 수 있습니다.
-    핸즈온 당일 아침에 **Access granted** 상태인지 반드시 확인하세요.
+!!! info "액세스 반영 시간"
+    Anthropic 사용 사례 양식을 제출하면 액세스가 **즉시 부여**되며, 콘솔 상태에는 반영까지 **수 분** 정도 걸릴 수 있습니다. 핸즈온 시작 전 모델 상태가 **Access granted**(또는 **Available**)인지 확인하세요.
 
 ## 0-5. IAM 권한 확인
 
@@ -143,11 +155,11 @@ Admin 권한이 있으므로 별도 설정이 필요 없습니다.
 - Amazon S3 (버킷 생성/삭제)
 - AWS DataSync (태스크 생성/실행)
 - Amazon Bedrock (Knowledge Base 생성, 모델 호출)
-- IAM (역할 생성 — Bedrock이 S3에 접근하기 위해 필요)
+- IAM (역할 생성: Bedrock이 S3에 접근할 때 필요)
 
 ## 0-6. 준비 완료 체크리스트
 
-실습 당일 시작 전에 확인하세요:
+핸즈온 당일, 시작하기 전에 확인하세요:
 
 - [ ] AWS 콘솔에 **IAM 사용자**로 로그인 완료 (루트 사용자 X)
 - [ ] AWS CLI v2 설치 완료 (`aws --version` 확인)

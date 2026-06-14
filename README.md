@@ -2,13 +2,13 @@
 
 > **2026 AWS Student Community Day 핸즈온 워크숍**
 
-Google Cloud Storage(GCS)에 저장된 문서를 AWS DataSync로 Amazon S3에 동기화한 뒤, Amazon Bedrock Knowledge Bases를 활용해 RAG 챗봇을 구축하는 실습입니다. 복잡한 코딩 없이 **AWS 콘솔 클릭만으로** 멀티클라우드 RAG 파이프라인의 전 과정을 체험합니다.
+Google Cloud Storage(GCS)에 저장된 문서를 AWS DataSync로 Amazon S3에 동기화한 뒤, Amazon Bedrock Knowledge Bases를 활용해 RAG 챗봇을 구축하는 핸즈온입니다. 복잡한 코딩 없이 **AWS 콘솔 클릭만으로** 멀티클라우드 RAG 파이프라인의 전 과정을 체험합니다.
 
 ## 아키텍처
 
 ![Cross-Cloud RAG Architecture](docs/images/architecture.png)
 
-## 실습 구성
+## 핸즈온 구성
 
 | 모듈 | 내용 | 소요 시간 |
 |------|------|----------|
@@ -22,9 +22,9 @@ Google Cloud Storage(GCS)에 저장된 문서를 AWS DataSync로 Amazon S3에 �
 
 ## 사전 준비 (필수)
 
-실습 **최소 24시간 전**에 완료해야 합니다. Bedrock 모델 액세스 승인에 최대 24시간이 걸릴 수 있습니다.
+핸즈온 시작 전에 미리 점검해 두세요. Bedrock 모델 액세스는 대부분 기본 활성화되어 있고 Anthropic Claude도 사용 사례 양식 제출 시 즉시 부여되지만, 신규 계정 검증·콘솔 반영 지연 등을 감안해 하루 전쯤 확인하는 것을 권장합니다.
 
-1. **AWS 계정** 준비 (프리 티어 가능)
+1. **AWS 계정** 준비 (신규/기존 모두 가능, 결제 수단 등록 필요 — 프리 티어로는 커버되지 않는 유료 서비스 사용)
 2. **IAM 사용자**로 로그인 (루트 사용자로는 Bedrock KB 생성 불가)
 3. 리전을 **`ap-northeast-2` (서울)**로 설정
 4. **Bedrock 모델 액세스 요청**
@@ -34,16 +34,18 @@ Google Cloud Storage(GCS)에 저장된 문서를 AWS DataSync로 Amazon S3에 �
 
 > 당일 진행자가 GCS 접속 정보(버킷 이름, HMAC 키)를 화면으로 안내합니다.
 
-## 실습 흐름
+## 핸즈온 흐름
 
-| 단계 | 클라우드 | 설명 |
+| 단계 | Managed Service | 설명 |
 |------|---------|------|
-| **1. 데이터 소스** | Google Cloud (GCS) | 진행자가 미리 준비한 RAG용 샘플 문서 |
+| **1. 데이터 소스** | Google Cloud Storage (GCS) | 진행자가 미리 준비한 RAG용 샘플 문서 |
 | **2. 데이터 전송** | AWS DataSync | GCS → S3 크로스 클라우드 동기화 (HMAC 키 인증) |
-| **3. RAG 파이프라인** | AWS (Bedrock KB) | 문서 파싱 → 청킹 → 임베딩 → 벡터 인덱싱 (자동) |
-| **4. 챗봇 테스트** | AWS (Bedrock) | KB 테스트 패널에서 Claude 3.5 Sonnet으로 RAG 질의응답 |
+| **3. RAG 파이프라인** | Amazon Bedrock Knowledge Bases | 문서 파싱 → 청킹 → 임베딩 → 벡터 인덱싱 (자동) |
+| **4. 챗봇 테스트** | Amazon Bedrock | KB 테스트 패널에서 Claude 3.5 Sonnet으로 RAG 질의응답 |
 
 ## 사용 AWS 서비스
+
+> 이번 핸즈온에서 우리가 직접 사용해볼 AWS의 Managed Service입니다.
 
 | 서비스 | 용도 |
 |--------|------|
@@ -54,11 +56,20 @@ Google Cloud Storage(GCS)에 저장된 문서를 AWS DataSync로 Amazon S3에 �
 | **Amazon OpenSearch Serverless** | 벡터 인덱스 저장 및 검색 (자동 생성) |
 | **Anthropic Claude 3.5 Sonnet** | RAG 챗봇 응답 생성 모델 |
 
+## 사용 GCP 서비스
+
+> 데이터 소스로 연결되는 GCP의 Managed Service입니다. **이번 핸즈온에서는 직접 구축하지 않으며**, 진행자가 미리 준비한 리소스를 데이터 소스로만 사용합니다.
+
+| 서비스 | 용도 |
+|--------|------|
+| **Google Cloud Storage (GCS)** | RAG용 샘플 문서가 저장된 데이터 소스 (사전 준비됨) |
+| **GCS HMAC 키 (Interoperability)** | S3 호환 인증으로 AWS DataSync가 GCS에 접근하도록 허용 (사전 준비됨) |
+
 ## 비용 안내
 
-이 워크숍은 AWS에서 제공하는 핸즈온 계정을 사용합니다. **개인 계정**으로 진행하는 경우 소량의 비용이 발생할 수 있습니다.
+이 핸즈온은 OpenSearch Serverless, Amazon Bedrock 등 **과금되는 서비스**를 사용합니다. 특히 OpenSearch Serverless는 시간당 과금됩니다.
 
-> **중요**: 실습이 끝나면 반드시 [Module 4 — 리소스 정리](docs/04-cleanup.md)를 진행하세요.
+> **중요**: 핸즈온이 끝나면 반드시 [Module 4 — 리소스 정리](docs/04-cleanup.md)를 진행하세요.
 > OpenSearch Serverless는 **시간당 과금**되므로, 삭제하지 않으면 비용이 계속 발생합니다.
 
 ## 기술 스택

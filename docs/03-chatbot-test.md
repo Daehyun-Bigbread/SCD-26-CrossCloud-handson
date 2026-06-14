@@ -18,7 +18,7 @@
 
 <!-- ![테스트 패널 설정](images/03-chatbot-test/test-panel-setup.png) -->
 
-## 3-2. 테스트 질문 — RAG 응답 확인
+## 3-2. 테스트 질문으로 RAG 응답 확인
 
 아래 질문들을 순서대로 입력하고, 응답이 **S3에 업로드한 문서 내용을 기반으로** 답변하는지 확인합니다.
 
@@ -62,7 +62,7 @@ RAG의 효과를 직접 체감해봅니다.
 
 1. Bedrock 콘솔 좌측 메뉴에서 **Playgrounds** → **Chat** 클릭
 2. 모델을 **Claude 3.5 Sonnet**으로 선택
-3. Knowledge Base **연결 없이** 같은 질문을 입력합니다:
+3. Knowledge Base를 **연결하지 않은 채** 같은 질문을 입력해 봅니다:
 
 ```
 Amazon Bedrock에서 지원하는 Foundation Model에는 어떤 것들이 있나요?
@@ -94,28 +94,28 @@ Source details를 통해 RAG 파이프라인의 내부 동작을 확인합니다
 
 > 이 정보를 통해 RAG 파이프라인이 어떤 문서의 어느 부분을 참조하여 답변을 생성했는지 추적할 수 있습니다.
 
-## 3-5. 실습 정리
+## 3-5. 핸즈온 정리
 
 축하합니다! Cross-Cloud RAG 챗봇 구축을 완료했습니다.
 
-### 오늘 실습한 전체 흐름
+### 오늘 핸즈온에서 다룬 전체 흐름
 
 ```
 Google Cloud Storage (GCS)
-    │  ← 원본 문서 저장
+    │   원본 문서 저장
     ▼
 AWS DataSync (HMAC Key 인증)
-    │  ← 크로스 클라우드 데이터 전송
+    │   크로스 클라우드 데이터 전송
     ▼
 Amazon S3
-    │  ← 문서 저장 (AWS 측)
+    │   문서 저장 (AWS 측)
     ▼
 Amazon Bedrock Knowledge Bases
-    │  ← 파싱 → 청킹 → 임베딩 → 벡터 인덱싱 (자동)
-    │  ← OpenSearch Serverless (벡터 DB, 자동 생성)
+    │   파싱 → 청킹 → 임베딩 → 벡터 인덱싱 (자동)
+    │   OpenSearch Serverless (벡터 DB, 자동 생성)
     ▼
 KB 테스트 패널 (Claude 3.5 Sonnet)
-    │  ← 질의 → 검색 → 답변 생성 (RAG)
+    │   질의 → 검색 → 답변 생성 (RAG)
     ▼
 사용자에게 답변 제공
 ```
