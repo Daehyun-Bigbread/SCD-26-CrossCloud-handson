@@ -12,11 +12,11 @@ Google Cloud Storage(GCS)에 저장된 문서를 AWS DataSync로 Amazon S3에 �
 
 | 모듈 | 내용 | 소요 시간 |
 |------|------|----------|
-| [Module 0 — 사전 준비](docs/00-prerequisites.md) | AWS 계정 설정, Bedrock 모델 액세스 요청 | **사전 완료** |
-| [Module 1 — GCS → S3 전송](docs/01-datasync-gcs-to-s3.md) | AWS DataSync로 GCS 문서를 S3로 동기화 | ~10분 |
-| [Module 2 — Bedrock Knowledge Bases](docs/02-bedrock-kb-create.md) | Knowledge Base 생성 & 데이터 소스 동기화 | ~15분 |
-| [Module 3 — RAG 챗봇 테스트](docs/03-chatbot-test.md) | KB 테스트 패널에서 RAG 챗봇 검증 | ~10분 |
-| [Module 4 — 리소스 정리](docs/04-cleanup.md) | 과금 방지를 위한 리소스 삭제 | ~5분 |
+| [Module 0: 사전 준비](docs/00-prerequisites.md) | AWS 계정 설정, Bedrock 모델 액세스 요청 | 5분 |
+| [Module 1: GCS → S3 전송](docs/01-datasync-gcs-to-s3.md) | AWS DataSync로 GCS 문서를 S3로 동기화 | ~10분 |
+| [Module 2: Bedrock Knowledge Bases](docs/02-bedrock-kb-create.md) | Knowledge Base 생성 & 데이터 소스 동기화 | ~15분 |
+| [Module 3: RAG 챗봇 테스트](docs/03-chatbot-test.md) | KB 테스트 패널에서 RAG 챗봇 검증 | ~5분 |
+| [Module 4: 리소스 정리](docs/04-cleanup.md) | 과금 방지를 위한 리소스 삭제 | ~5분 |
 
 **총 소요 시간**: 약 40분
 

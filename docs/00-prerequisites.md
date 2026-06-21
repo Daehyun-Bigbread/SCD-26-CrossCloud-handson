@@ -1,7 +1,7 @@
 # Module 0 - 사전 준비
 
 !!! warning "사전 점검 권장"
-    Bedrock 모델 액세스는 대부분 **기본 활성화**되어 있고, Anthropic Claude도 사용 사례 양식을 제출하면 **즉시 부여**됩니다. 다만 신규 계정의 결제 수단 검증, 사용 사례 양식 작성(website URL 필요), 콘솔 반영 지연(수 분) 같은 변수가 있으니 **핸즈온 하루 전쯤 미리** 모델 액세스 상태를 확인해 두세요.
+    Anthropic Claude는 최초 사용 시 **사용 사례 양식(website URL 필요)** 제출이 필요합니다. 제출하면 즉시 부여되지만, 신규 계정의 결제 수단 검증이나 콘솔 반영 지연(수 분) 같은 변수가 있으니 **핸즈온 하루 전쯤 미리** 확인해 두세요.
 
 ## 0-1. AWS 계정 준비
 
@@ -13,6 +13,11 @@ AWS 계정이 없는 경우 [https://aws.amazon.com](https://aws.amazon.com) 에
 !!! danger "필수 확인"
     이 핸즈온은 **IAM 사용자**로 로그인해야 합니다. **루트 사용자(Root user)로는 Bedrock Knowledge Base를 생성할 수 없습니다.**
     IAM 사용자가 없는 경우 아래 절차로 생성하세요.
+
+!!! tip "이미 IAM 사용자가 있다면 건너뛰세요"
+    **`AdministratorAccess` 권한을 가진 IAM 사용자가 이미 있다면**, 아래 "IAM 사용자 생성" 단계는 **생략**하고
+    그 사용자로 로그인한 뒤 아래 **0-3 리전 설정**부터 진행하면 됩니다.
+    (Admin 권한이 없는 IAM 사용자라면, 0-5의 서비스 권한을 갖췄는지 확인하세요.)
 
 ### IAM 사용자 생성 (루트 사용자인 경우)
 
@@ -44,9 +49,17 @@ AWS 계정이 없는 경우 [https://aws.amazon.com](https://aws.amazon.com) 에
 
 > 로그인 URL 형식: `https://{계정ID}.signin.aws.amazon.com/console`
 
-## 0-2. AWS CLI 설치 및 자격증명 등록
+## 0-2. AWS CLI 설치 및 자격증명 등록 (선택)
 
-핸즈온 스크립트를 사용하려면 AWS CLI가 설치되어 있고, IAM 사용자의 자격증명이 등록되어야 합니다.
+!!! tip "이 섹션은 건너뛰어도 됩니다"
+    이번 핸즈온은 기본적으로 **AWS 콘솔 클릭**으로 진행합니다. CLI 스크립트는 콘솔 단계를 놓쳤거나
+    잘못 설정했을 때 **되돌려서 한 번에 재구축하는 폴백/복구용**입니다.
+
+    - **콘솔만 사용**하거나 **AWS CloudShell**에서 스크립트를 실행할 경우 → **0-2는 생략**하세요.
+      (CloudShell에는 AWS CLI v2가 이미 설치돼 있고, 콘솔 로그인 자격증명이 자동 적용됩니다.)
+    - **내 PC(로컬)에서 직접 CLI 스크립트를 실행**할 때만 아래 설치·자격증명 등록이 필요합니다.
+
+핸즈온 스크립트를 **로컬에서** 사용하려면 AWS CLI가 설치되어 있고, IAM 사용자의 자격증명이 등록되어야 합니다.
 
 ### AWS CLI v2 설치
 
@@ -65,14 +78,22 @@ aws --version
 
 ### IAM 사용자 Access Key 생성
 
-1. AWS 콘솔에서 **IAM** → **Users** → 위에서 만든 사용자 클릭
+1. AWS 콘솔에서 **IAM** → **Users** → 위에서 만든 사용자 클릭 (scd-26)
 2. **Security credentials** 탭 → **Access keys** → **Create access key**
-3. Use case에서 **Command Line Interface (CLI)** 선택 → **Next**
+
+![Access key 생성](images/00-prerequisites/access-key.png)
+
+3. Use case에서 **Command Line Interface (CLI)** 선택 → **Next** (설명 태그 값은 공란)
 4. **Create access key** 클릭
+
+![AWS CLI 생성](images/00-prerequisites/aws-cli.png)
+
 5. **Access Key ID**와 **Secret Access Key**를 안전한 곳에 복사해 둡니다
 
 !!! warning "주의"
     Secret Access Key는 이 화면에서만 확인 가능합니다. 반드시 복사해 두세요.
+
+![AWS acess key 확인](images/00-prerequisites/access-key-get.png)
 
 ### AWS CLI 자격증명 등록
 
@@ -89,6 +110,8 @@ Default region name [None]: ap-northeast-2
 Default output format [None]: json
 ```
 
+![AWS configure](images/00-prerequisites/aws-configure.png)
+
 등록 확인:
 ```bash
 aws sts get-caller-identity
@@ -103,6 +126,8 @@ aws sts get-caller-identity
 }
 ```
 
+![AWS configure check](images/00-prerequisites/aws-configure-check.png)
+
 ## 0-3. 리전 설정
 
 이번 핸즈온은 **`ap-northeast-2` (서울)** 리전에서 진행합니다.
@@ -114,32 +139,32 @@ aws sts get-caller-identity
     콘솔과 CLI 모두 리전이 `ap-northeast-2`인지 반드시 확인하세요.
     다른 리전에서 리소스를 생성하면 이후 단계에서 오류가 발생합니다.
 
-<!-- ![리전 선택](images/00-prerequisites/region-select.png) -->
+![AWS region setting](images/00-prerequisites/region-setting.png)
 
-## 0-4. Bedrock 모델 액세스 요청
+## 0-4. Bedrock 모델 확인
 
-대부분의 Bedrock 파운데이션 모델은 **기본적으로 활성화**되어 있습니다. 다만 **Anthropic Claude**는 계정(또는 조직)당 1회 **사용 사례 양식(First Time Use)** 작성이 필요하며, 제출하면 바로 사용할 수 있습니다.
+!!! info "Model access 페이지 폐지 안내"
+    AWS가 Bedrock Model access 페이지를 폐지했습니다. 이제 대부분의 모델은 **처음 호출 시 자동으로 활성화**됩니다. 단, **Anthropic Claude**는 최초 사용 시 사용 사례 양식 제출이 필요합니다.
 
-### 요청할 모델
+### 이번 핸즈온에서 사용하는 모델
 
-| 모델 | 용도 | 필수 여부 |
-|------|------|----------|
-| **Amazon Titan Text Embeddings V2** | 문서 임베딩 (벡터 변환) | 필수 |
-| **Anthropic Claude 3.5 Sonnet** | 챗봇 응답 생성 | 필수 |
-| Anthropic Claude 3 Haiku | 대체 모델 (비용 절약) | 선택 |
+| 모델 | 용도 | 비고 |
+|------|------|------|
+| **Amazon Titan Text Embeddings V2** | 문서 임베딩 (벡터 변환) | 자동 활성화 |
+| **Anthropic Claude 3.5 Sonnet** | 챗봇 응답 생성 | 최초 사용 시 양식 제출 필요 |
 
-### 요청 방법
+### Anthropic Claude 사용 설정
 
 1. AWS 콘솔에서 **Amazon Bedrock** 서비스로 이동합니다
-2. 좌측 메뉴에서 **Bedrock configurations** → **Model access**를 클릭합니다
-3. **Modify model access** 버튼을 클릭합니다
-4. 위 표의 모델들을 체크하고 **Next** → **Submit** 합니다
-   - Anthropic Claude를 추가하면 **사용 사례 양식(use case details)** 입력 창이 뜹니다. 용도와 website URL(개인 포트폴리오·GitHub·프로젝트 주소 가능)을 적고 제출하세요.
+2. 좌측 메뉴에서 **모델 카탈로그**를 클릭합니다
+3. **Claude 3.5 Sonnet**을 검색해 클릭합니다
 
-<!-- ![모델 액세스 요청](images/00-prerequisites/model-access.png) -->
+![Bedrock Claude](images/00-prerequisites/bedrock-claude.png)
 
-!!! info "액세스 반영 시간"
-    Anthropic 사용 사례 양식을 제출하면 액세스가 **즉시 부여**되며, 콘솔 상태에는 반영까지 **수 분** 정도 걸릴 수 있습니다. 핸즈온 시작 전 모델 상태가 **Access granted**(또는 **Available**)인지 확인하세요.
+4. **Open in playground** (또는 **Try in playground**)를 클릭하면 사용 사례 양식 입력 창이 뜹니다. 버튼이 보이지 않으면 **Request model access** 버튼을 클릭하세요
+
+!!! info "양식 제출 후"
+    제출하면 액세스가 **즉시 부여**됩니다. 핸즈온 시작 전에 미리 확인해 두세요.
 
 ## 0-5. IAM 권한 확인
 
@@ -162,14 +187,18 @@ Admin 권한이 있으므로 별도 설정이 필요 없습니다.
 핸즈온 당일, 시작하기 전에 확인하세요:
 
 - [ ] AWS 콘솔에 **IAM 사용자**로 로그인 완료 (루트 사용자 X)
+- [ ] 리전이 `ap-northeast-2` (서울)로 설정됨 (콘솔)
+- [ ] Bedrock에서 **Anthropic Claude 3.5 Sonnet** 사용 가능 (사용 사례 양식 제출 완료)
+- [ ] S3, DataSync, Bedrock 서비스에 접근 가능
+
+**로컬에서 CLI 스크립트를 실행할 경우에만 (선택)**
+
 - [ ] AWS CLI v2 설치 완료 (`aws --version` 확인)
 - [ ] `aws configure` 완료 (`aws sts get-caller-identity` 확인)
-- [ ] 리전이 `ap-northeast-2` (서울)로 설정됨 (콘솔 + CLI 모두)
-- [ ] Bedrock 모델 액세스 상태가 **Access granted**
-  - [ ] Amazon Titan Text Embeddings V2
-  - [ ] Anthropic Claude 3.5 Sonnet (또는 Claude 3 Haiku)
-- [ ] S3, DataSync, Bedrock 서비스에 접근 가능
+- [ ] CLI 리전도 `ap-northeast-2`로 설정됨
+
+> CloudShell에서 스크립트를 실행하면 위 3가지(설치·자격증명·CLI 리전)는 자동으로 충족됩니다.
 
 ---
 
-**다음 단계**: [Module 1 — GCS → S3 전송](01-datasync-gcs-to-s3.md)
+**다음 단계**: [Module 1 : GCS → S3 전송](01-datasync-gcs-to-s3.md)
