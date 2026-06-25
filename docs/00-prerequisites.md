@@ -8,7 +8,7 @@
 AWS 계정이 없는 경우 [https://aws.amazon.com](https://aws.amazon.com) 에서 생성합니다.
 
 !!! warning "프리 티어로는 부족합니다"
-    신규/기존 계정 모두 사용할 수 있지만, 이 핸즈온에서 쓰는 **OpenSearch Serverless, AWS DataSync, Amazon Bedrock은 프리 티어로 커버되지 않아 소액의 비용이 발생**합니다. 특히 OpenSearch Serverless는 시간당 과금되므로(약 $0.48/시간), 결제 수단(신용카드) 등록이 필요하며 핸즈온이 끝나면 반드시 [Module 4 — 리소스 정리](04-cleanup.md)를 진행하세요.
+    신규/기존 계정 모두 사용할 수 있지만, 이 핸즈온에서 쓰는 **OpenSearch Serverless, AWS DataSync, Amazon Bedrock은 프리 티어로 커버되지 않아 소액의 비용이 발생**합니다. 특히 OpenSearch Serverless는 시간당 과금되므로(약 $0.48/시간), 결제 수단(신용카드) 등록이 필요하며 핸즈온이 끝나면 반드시 [Module 3 — RAG 챗봇 테스트 & 리소스 정리](03-chatbot-test.md)의 리소스 정리를 진행하세요.
 
 !!! danger "필수 확인"
     이 핸즈온은 **IAM 사용자**로 로그인해야 합니다. **루트 사용자(Root user)로는 Bedrock Knowledge Base를 생성할 수 없습니다.**

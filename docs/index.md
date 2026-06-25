@@ -129,7 +129,7 @@ hide:
 <div class="asb-callout asb-callout-warning">
   <strong>비용 안내</strong><br>
   이 핸즈온은 OpenSearch Serverless, Amazon Bedrock 등 <strong>과금되는 서비스</strong>를 사용합니다.
-  특히 OpenSearch Serverless는 시간당 과금되므로, 핸즈온이 끝나면 반드시 Module 4 부분에서 안내되는 리소스 정리를 진행해 핸즈온에 사용된 모든 리소스를 삭제하세요.
+  특히 OpenSearch Serverless는 시간당 과금되므로, 핸즈온이 끝나면 반드시 Module 3 마지막의 리소스 정리를 진행해 핸즈온에 사용된 모든 리소스를 삭제하세요.
 </div>
 
 </div>
