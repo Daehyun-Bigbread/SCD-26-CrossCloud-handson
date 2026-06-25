@@ -1,22 +1,23 @@
-# Module 3 — RAG 챗봇 테스트
+# Module 3 — RAG 챗봇 테스트 & 리소스 정리
 
-> **소요 시간**: 약 10분
+> **소요 시간**: 약 15분
 >
-> **목표**: Knowledge Base 테스트 패널에서 RAG 챗봇을 테스트하고, RAG 유무에 따른 응답 차이를 비교합니다.
+> **목표**: Knowledge Base 테스트 패널에서 RAG 챗봇을 테스트한 뒤, 과금 방지를 위해 핸즈온에서 만든 모든 AWS 리소스를 삭제합니다.
 
 ## 3-1. Knowledge Base 테스트 패널 사용
 
-가장 간단한 테스트 방법은 Knowledge Base 상세 페이지의 내장 테스트 패널입니다.
+동기화가 완료되면 Knowledge Base 상세 페이지의 내장 테스트 패널에서 바로 RAG 챗봇을 테스트할 수 있습니다.
+
 
 1. **Amazon Bedrock** 콘솔 → **Knowledge Bases** → `scd26-crosscloud-rag-kb` 클릭
 2. 우측의 **Test knowledge base** 패널에서:
 
 | 항목 | 설정 |
 |------|------|
-| Select model | **Anthropic Claude 3.5 Sonnet** |
+| Select model | **Anthropic Claude 3.5 Sonnet** (또는 Claude 3 Haiku) |
 | Source details | **ON** (출처 문서 표시) |
 
-<!-- ![테스트 패널 설정](images/03-chatbot-test/test-panel-setup.png) -->
+![Bedrock-kb-sync-test](images/02-bedrock/bedrock-kb-sync-test.png)
 
 ## 3-2. 테스트 질문으로 RAG 응답 확인
 
@@ -54,47 +55,10 @@ Amazon Bedrock에서 지원하는 Foundation Model에는 어떤 것들이 있나
 
 <!-- ![RAG 응답 예시](images/03-chatbot-test/rag-response-example.png) -->
 
-## 3-3. RAG vs Non-RAG 비교 (선택)
+> 응답 하단의 **Show source details**를 열면 참조한 S3 문서 경로, 실제 검색된 청크, 관련도 점수를 확인할 수 있습니다.
+> 이를 통해 RAG 파이프라인이 어떤 문서의 어느 부분을 참조해 답변했는지 추적할 수 있습니다.
 
-RAG의 효과를 직접 체감해봅니다.
-
-### Non-RAG 응답 확인
-
-1. Bedrock 콘솔 좌측 메뉴에서 **Playgrounds** → **Chat** 클릭
-2. 모델을 **Claude 3.5 Sonnet**으로 선택
-3. Knowledge Base를 **연결하지 않은 채** 같은 질문을 입력해 봅니다:
-
-```
-Amazon Bedrock에서 지원하는 Foundation Model에는 어떤 것들이 있나요?
-```
-
-### 비교 포인트
-
-| 항목 | RAG 응답 | Non-RAG 응답 |
-|------|---------|-------------|
-| 정보 출처 | 업로드한 문서 기반 | 모델 학습 데이터 기반 |
-| 최신성 | 문서가 최신이면 최신 정보 | 학습 시점까지의 정보만 |
-| 정확도 | 문서에 있는 내용에 대해 높음 | 환각 가능성 있음 |
-| 출처 표시 | Source 링크 제공 | 출처 불명 |
-
-## 3-4. 검색 결과 상세 확인
-
-Source details를 통해 RAG 파이프라인의 내부 동작을 확인합니다.
-
-1. 응답 하단의 **Show source details** 클릭
-2. 각 Source에서 확인할 수 있는 정보:
-
-| 항목 | 설명 |
-|------|------|
-| **Source document** | 참조한 S3 문서 경로 |
-| **Chunk** | 실제로 검색된 문서 조각 (청크) |
-| **Relevance score** | 질문과의 관련도 점수 |
-
-<!-- ![출처 상세](images/03-chatbot-test/source-details.png) -->
-
-> 이 정보를 통해 RAG 파이프라인이 어떤 문서의 어느 부분을 참조하여 답변을 생성했는지 추적할 수 있습니다.
-
-## 3-5. 핸즈온 정리
+## 3-3. 핸즈온 정리
 
 축하합니다! Cross-Cloud RAG 챗봇 구축을 완료했습니다.
 
@@ -128,7 +92,265 @@ KB 테스트 패널 (Claude 3.5 Sonnet)
 
 ---
 
-!!! danger "중요"
-    다음 모듈에서 리소스를 삭제합니다. 과금 방지를 위해 반드시 진행하세요!
+## 리소스 정리 (과금 방지)
 
-**이전**: [Module 2 — Bedrock Knowledge Bases](02-bedrock-kb-create.md) | **다음**: [Module 4 — 리소스 정리](04-cleanup.md)
+!!! danger "즉시 진행 필수"
+    OpenSearch Serverless는 **시간당 $0.48** (2 OCU)이 과금됩니다.
+    핸즈온이 끝나면 **곧바로** 아래 정리를 진행하세요.
+
+리소스끼리 의존 관계가 있어서 **아래 순서대로** 삭제해야 합니다.
+
+1. **Bedrock Knowledge Base** 를 가장 먼저 삭제합니다. Quick create로 만들어진 OpenSearch 컬렉션이 함께 지워집니다.
+2. **DataSync 태스크와 위치** 를 삭제합니다. 전송에 사용한 리소스입니다.
+3. **S3 버킷** 을 마지막으로 삭제합니다. 객체를 먼저 비운 뒤 버킷을 지웁니다.
+
+> 아래 각 단계의 **제품 이름(예: Amazon Bedrock, AWS DataSync, S3)을 클릭하면** 서울 리전(`ap-northeast-2`) 콘솔의 해당 제품 위치로 바로 이동합니다.
+
+## 3-4. Bedrock Knowledge Base 삭제
+
+1. [**Amazon Bedrock** 콘솔](https://ap-northeast-2.console.aws.amazon.com/bedrock/home?region=ap-northeast-2#/knowledge-bases) → **Knowledge Bases**
+2. `scd26-crosscloud-rag-kb` 선택
+3. **Delete** 클릭
+4. 확인 다이얼로그에서 Knowledge Base 이름을 입력하고 **Delete** 확인
+
+<!-- ![KB 삭제](images/03-chatbot-test/delete-kb.png) -->
+
+> Knowledge Base를 삭제하면 **Quick create로 자동 생성된 OpenSearch Serverless 컬렉션도 함께 삭제**됩니다.
+> 이것이 과금의 주요 원인이므로 가장 먼저 삭제합니다.
+
+### 확인: OpenSearch Serverless 컬렉션 삭제 확인
+
+1. [**Amazon OpenSearch Service** 콘솔](https://ap-northeast-2.console.aws.amazon.com/aos/home?region=ap-northeast-2#opensearch/collections)로 이동
+2. 좌측 메뉴에서 **Serverless** → **DashBoard or Collections**
+3. Bedrock KB가 생성한 컬렉션이 **삭제 중** 또는 이미 사라졌는지 확인
+
+![opensearch-delete](images/03-chatbot/opensearch-delete.png)
+
+> 만약 컬렉션이 남아있다면 수동으로 삭제합니다:
+> 컬렉션 선택 → **Delete** → 확인
+
+## 3-5. DataSync 태스크 & 위치 삭제
+
+### 태스크 삭제
+
+1. [**AWS DataSync** 콘솔](https://ap-northeast-2.console.aws.amazon.com/datasync/home?region=ap-northeast-2#/tasks) → **Tasks**
+2. `scd26-gcs-to-s3-transfer` 태스크 선택
+3. **Actions** → **Delete** 클릭
+4. 확인 후 삭제
+
+<!-- ![DataSync 태스크 삭제](images/03-chatbot-test/delete-datasync-task.png) -->
+
+### 위치 삭제
+
+1. [**AWS DataSync** 콘솔](https://ap-northeast-2.console.aws.amazon.com/datasync/home?region=ap-northeast-2#/locations) → **Locations**
+2. 생성한 위치 2개를 각각 선택하여 삭제:
+   - Object storage 위치 (GCS 소스)
+   - Amazon S3 위치 (대상)
+3. 각각 **Actions** → **Delete** 클릭
+
+## 3-6. S3 버킷 삭제
+
+S3 버킷은 **비어있어야만** 삭제할 수 있습니다.
+
+### 버킷 비우기
+
+1. [**S3** 콘솔](https://ap-northeast-2.console.aws.amazon.com/s3/buckets?region=ap-northeast-2) → `scd26-handson-rag-docs-{이니셜}` 버킷 클릭
+2. 모든 객체를 선택 (체크박스) → **Delete** 클릭
+3. `permanently delete` 입력 → **Delete objects** 확인
+
+### 버킷 삭제
+
+1. S3 콘솔의 버킷 목록으로 돌아갑니다
+2. 버킷 이름 좌측 라디오 버튼 선택 → **Delete** 클릭
+3. 버킷 이름을 입력 → **Delete bucket** 확인
+
+<!-- ![S3 버킷 삭제](images/03-chatbot-test/delete-s3-bucket.png) -->
+
+## 3-7. IAM 역할 삭제 (선택)
+
+Bedrock KB와 DataSync가 자동 생성한 IAM 역할을 정리합니다.
+
+1. [**IAM** 콘솔](https://console.aws.amazon.com/iam/home#/roles) → **Roles**
+2. 아래 패턴의 역할을 검색하여 삭제:
+   - `AmazonBedrockExecutionRoleForKnowledgeBase_*`
+   - `AWSDataSyncS3BucketAccess-*`
+3. 해당 역할 선택 → **Delete** → 역할 이름 입력 → 삭제 확인
+
+> 이 단계는 선택 사항이지만, 계정을 깔끔하게 유지하고 싶다면 진행하세요.
+
+## 삭제 완료 체크리스트
+
+모든 리소스가 잘 지워졌는지 아래 항목으로 점검하세요.
+
+- [ ] **Bedrock Knowledge Base** 삭제됨
+- [ ] **OpenSearch Serverless** 컬렉션 삭제됨 (자동 삭제 확인)
+- [ ] **DataSync 태스크** 삭제됨
+- [ ] **DataSync 위치** 2개 삭제됨
+- [ ] **S3 버킷** 비우기 + 삭제됨
+- [ ] (선택) **IAM 역할** 삭제됨
+
+## 비용 확인
+
+삭제 후 예상 비용을 확인해봅니다.
+
+1. AWS 콘솔 우측 상단 **계정 이름** 클릭 → [**Billing and Cost Management**](https://console.aws.amazon.com/billing/home)
+2. 핸즈온 당일 발생한 비용이 ~$1.50 이하인지 확인
+
+> 다음 날 **Cost Explorer**에서 서비스별 상세 비용을 확인할 수 있습니다.
+
+??? example "CLI 스크립트로 자동 삭제 (복사/붙여넣기용)"
+
+    콘솔에서 하나씩 지우는 대신 AWS CLI로 모든 리소스를 한 번에 삭제할 수 있습니다.
+    아래 스크립트를 터미널에 복사하여 실행하세요.
+
+    !!! danger "되돌릴 수 없습니다"
+        이 스크립트는 핸즈온에서 생성한 **모든 리소스를 영구 삭제**합니다.
+        실행 전 S3 버킷 이름을 정확히 확인하세요.
+
+    **실행 방법**:
+    ```bash
+    chmod +x scripts/cleanup-aws.sh
+    ./scripts/cleanup-aws.sh
+    ```
+
+    **전체 스크립트**:
+    ```bash
+    #!/bin/bash
+    set -euo pipefail
+
+    REGION="ap-northeast-2"
+
+    echo "============================================"
+    echo "  SCD-26 Cross-Cloud RAG 핸즈온 리소스 정리"
+    echo "============================================"
+    echo ""
+    echo "⚠ 이 스크립트는 핸즈온에서 생성한 모든 AWS 리소스를 삭제합니다."
+    read -rp "계속하시겠습니까? (y/n): " CONFIRM
+    if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
+      echo "취소되었습니다."
+      exit 0
+    fi
+
+    read -rp "S3 버킷 이름: " S3_BUCKET
+
+    # ─── Step 1: Bedrock Knowledge Base 삭제 ──────────────────────
+    echo ""
+    echo "━━━ [1/4] Bedrock Knowledge Base 삭제 ━━━"
+    KB_ID=$(aws bedrock-agent list-knowledge-bases \
+      --region "$REGION" \
+      --query 'knowledgeBaseSummaries[?name==`scd26-crosscloud-rag-kb`].knowledgeBaseId' \
+      --output text 2>/dev/null)
+
+    if [[ -n "$KB_ID" && "$KB_ID" != "None" ]]; then
+      DS_IDS=$(aws bedrock-agent list-data-sources \
+        --knowledge-base-id "$KB_ID" \
+        --region "$REGION" \
+        --query 'dataSourceSummaries[].dataSourceId' \
+        --output text 2>/dev/null)
+
+      for DS_ID in $DS_IDS; do
+        echo "  데이터 소스 삭제: $DS_ID"
+        aws bedrock-agent delete-data-source \
+          --knowledge-base-id "$KB_ID" \
+          --data-source-id "$DS_ID" \
+          --region "$REGION" \
+          --output text > /dev/null 2>&1 || true
+      done
+
+      echo "  Knowledge Base 삭제: $KB_ID"
+      aws bedrock-agent delete-knowledge-base \
+        --knowledge-base-id "$KB_ID" \
+        --region "$REGION" \
+        --output text > /dev/null 2>&1
+      echo "✓ Knowledge Base 삭제 완료 (OpenSearch Serverless도 자동 삭제됨)"
+    else
+      echo "  Knowledge Base를 찾을 수 없습니다. 건너뜁니다."
+    fi
+
+    # ─── Step 2: DataSync 태스크 & 위치 삭제 ──────────────────────
+    echo ""
+    echo "━━━ [2/4] DataSync 태스크 & 위치 삭제 ━━━"
+    TASK_ARNS=$(aws datasync list-tasks \
+      --region "$REGION" \
+      --query 'Tasks[?Name==`scd26-gcs-to-s3-transfer`].TaskArn' \
+      --output text 2>/dev/null)
+
+    for TASK_ARN in $TASK_ARNS; do
+      echo "  태스크 삭제: $TASK_ARN"
+      aws datasync delete-task \
+        --task-arn "$TASK_ARN" \
+        --region "$REGION" \
+        --output text > /dev/null 2>&1 || true
+    done
+
+    LOCATION_ARNS=$(aws datasync list-locations \
+      --region "$REGION" \
+      --query 'Locations[].LocationArn' \
+      --output text 2>/dev/null)
+
+    for LOC_ARN in $LOCATION_ARNS; do
+      LOC_URI=$(aws datasync describe-location-object-storage \
+        --location-arn "$LOC_ARN" \
+        --region "$REGION" \
+        --query 'LocationUri' --output text 2>/dev/null || \
+        aws datasync describe-location-s3 \
+        --location-arn "$LOC_ARN" \
+        --region "$REGION" \
+        --query 'LocationUri' --output text 2>/dev/null || echo "")
+
+      if [[ "$LOC_URI" == *"storage.googleapis.com"* ]] || [[ "$LOC_URI" == *"$S3_BUCKET"* ]]; then
+        echo "  위치 삭제: $LOC_URI"
+        aws datasync delete-location \
+          --location-arn "$LOC_ARN" \
+          --region "$REGION" \
+          --output text > /dev/null 2>&1 || true
+      fi
+    done
+    echo "✓ DataSync 리소스 삭제 완료"
+
+    # ─── Step 3: S3 버킷 삭제 ─────────────────────────────────────
+    echo ""
+    echo "━━━ [3/4] S3 버킷 삭제 ━━━"
+    if aws s3api head-bucket --bucket "$S3_BUCKET" --region "$REGION" 2>/dev/null; then
+      echo "  버킷 비우는 중..."
+      aws s3 rm "s3://$S3_BUCKET" --recursive --region "$REGION" > /dev/null 2>&1
+      echo "  버킷 삭제 중..."
+      aws s3api delete-bucket --bucket "$S3_BUCKET" --region "$REGION"
+      echo "✓ S3 버킷 삭제 완료: $S3_BUCKET"
+    else
+      echo "  S3 버킷을 찾을 수 없습니다. 건너뜁니다."
+    fi
+
+    # ─── Step 4: IAM 역할 삭제 ────────────────────────────────────
+    echo ""
+    echo "━━━ [4/4] IAM 역할 삭제 ━━━"
+    for ROLE_NAME in "DataSyncS3Role-scd26-handson" "AmazonBedrockKBRole-scd26-handson"; do
+      if aws iam get-role --role-name "$ROLE_NAME" > /dev/null 2>&1; then
+        POLICIES=$(aws iam list-role-policies \
+          --role-name "$ROLE_NAME" \
+          --query 'PolicyNames' --output text 2>/dev/null)
+        for POLICY in $POLICIES; do
+          aws iam delete-role-policy --role-name "$ROLE_NAME" --policy-name "$POLICY"
+        done
+        aws iam delete-role --role-name "$ROLE_NAME"
+        echo "✓ IAM 역할 삭제: $ROLE_NAME"
+      fi
+    done
+
+    echo ""
+    echo "============================================"
+    echo "  리소스 정리 완료!"
+    echo "============================================"
+    echo ""
+    echo "  ▶ AWS 콘솔에서 OpenSearch Serverless 컬렉션이"
+    echo "    삭제되었는지 최종 확인하세요."
+    ```
+
+    > 스크립트는 콘솔 경로(`AmazonBedrockExecutionRoleForKnowledgeBase_*`, `AWSDataSyncS3BucketAccess-*`)가 아닌 **CLI 스크립트로 만든 역할**(`DataSyncS3Role-scd26-handson`, `AmazonBedrockKBRole-scd26-handson`)을 삭제합니다.
+    > 콘솔로 핸즈온을 진행했다면 IAM 역할은 위 **3-7** 단계대로 콘솔에서 삭제하세요.
+
+---
+
+**수고하셨습니다!** Cross-Cloud RAG 챗봇 핸즈온을 완료했습니다.
+
+**이전**: [Module 2: Bedrock Knowledge Bases](02-bedrock-kb-create.md) | **처음으로**: [Home](index.md)
