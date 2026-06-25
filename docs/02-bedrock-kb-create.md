@@ -6,7 +6,9 @@
 
 ## 핵심 개념
 
-**Amazon Bedrock Knowledge Bases**는 RAG 파이프라인을 자동으로 구축해주는 매니지드 서비스입니다.
+[**Amazon Bedrock Knowledge Bases**](https://aws.amazon.com/ko/bedrock/knowledge-bases/)는 RAG 파이프라인을 자동으로 구축해주는 매니지드 서비스입니다.
+
+검색 증강 생성(RAG)은 회사 데이터 소스에서 가져온 컨텍스트로 프롬프트를 보강해, 파운데이션 모델이 더 관련성 높고 정확한 맞춤형 응답을 내도록 하는 기술입니다. Bedrock Knowledge Bases는 세션 컨텍스트 관리와 소스 속성(인용) 기능을 내장한 완전관리형 서비스로, 데이터 소스에 대한 맞춤형 통합을 직접 구축하거나 데이터 흐름을 관리하지 않아도 수집부터 검색·프롬프트 증강까지 전체 RAG 워크플로를 구현하도록 돕습니다.
 
 ```
 S3 (문서) → Bedrock KB → [파싱 → 청킹 → 임베딩 → 벡터 저장] → 검색 가능한 지식 기반
@@ -35,31 +37,43 @@ S3 (문서) → Bedrock KB → [파싱 → 청킹 → 임베딩 → 벡터 저�
 1. AWS 콘솔에서 **Amazon Bedrock** 서비스로 이동합니다
 2. 좌측 메뉴에서 **빌더 도구(Builder tools)** → **지식 기반** 클릭
 3. **지식 기반 생성** 클릭
+4. **Unstructed data** 아래 **벡터 저장소가 포함된 지식 기반** 클릭
+
+![Bedrock-kb-create](images/02-bedrock/bedrock-kb-intro.png)
 
 ### Step 1: 지식 기반 세부 정보
 
+- 아래 표에 적힌대로 기입합니다.
+
 | 항목 | 값 |
 |------|-----|
-| Knowledge base name | `scd26-crosscloud-rag-kb` |
-| Description | `Cross-Cloud RAG 핸즈온 - GCS에서 동기화한 문서 기반 Knowledge Base` |
-| IAM permissions | **Create and use a new service role** (기본값) |
+| 지식 기반 이름| `scd26-crosscloud-rag-kb` |
+| 지식 기반 설명 - 선택 사항 | `Cross-Cloud RAG 핸즈온 - GCS에서 동기화한 문서 기반 Knowledge Base` |
+| IAM permissions (IAM 권한) | **새 서비스 역할 생성 및 사용** |
 
 **다음** 클릭
+
+![Bedrock-kb-detail](images/02-bedrock/bedrock-kb-detail.png)
 
 ### Step 2: 데이터 소스 구성
 
 | 항목 | 값 |
 |------|-----|
 | Data source name | `s3-synced-docs` |
+| Data source 위치 | `이 AWS 계정` |
 | S3 URI | **Browse S3** 클릭 → Module 1에서 생성한 버킷 선택 |
+
+![Bedrock-kb-dataset1](images/02-bedrock/bedrock-kb-dataset1.png)
+![Bedrock-kb-dataset2](images/02-bedrock/bedrock-kb-dataset2.png)
 
 > S3 URI 형식: `s3://{본인 버킷 이름}/` (버킷 루트 전체 선택)
 
-**Chunking strategy** (Advanced settings):
+**구문 분석 전략**: Amazon Bedrock 기본 파서 
+**청킹 전략(Chunking strategy)** (Advanced settings):
 
 | 항목 | 값 |
 |------|-----|
-| Chunking strategy | **Default chunking** (기본값 권장) |
+| Chunking strategy | **기본 청깅 (Default chunking)**|
 
 > 기본 청킹은 300 토큰 단위로 문서를 나눕니다. 입문 핸즈온에서는 기본값이 적합합니다.
 
@@ -77,6 +91,8 @@ S3 (문서) → Bedrock KB → [파싱 → 청킹 → 임베딩 → 벡터 저�
 > **Quick create**를 선택하면 OpenSearch Serverless 컬렉션이 자동으로 생성됩니다.
 > 수동 설정 대비 약 15분의 시간을 절약할 수 있습니다.
 
+![Bedrock-kb-embedding](images/02-bedrock/bedrock-kb-embedding.png)
+
 **다음** 클릭
 
 ### Step 4: 검토 및 생성
@@ -84,9 +100,11 @@ S3 (문서) → Bedrock KB → [파싱 → 청킹 → 임베딩 → 벡터 저�
 - 모든 설정을 확인하고 **지식 기반 생성** 클릭
 - Knowledge Base 생성에 약 **3~5분**이 소요됩니다
 
+![Bedrock-kb-review](images/02-bedrock/bedrock-kb-review.png)
+
 !!! danger "과금 주의"
     OpenSearch Serverless 컬렉션이 함께 생성되므로 이 시점부터 **시간당 과금**이 시작됩니다.
-    핸즈온이 끝나면 반드시 [Module 4 — 리소스 정리](04-cleanup.md)를 진행하세요.
+    핸즈온이 끝나면 반드시 [Module 3 — RAG 챗봇 테스트 & 리소스 정리](03-chatbot-test.md)의 리소스 정리를 진행하세요.
 
 ## 2-2. 데이터 소스 동기화 (Sync)
 
@@ -94,10 +112,15 @@ Knowledge Base가 생성되면 S3의 문서를 임베딩하여 벡터 인덱스�
 
 1. 생성된 Knowledge Base 상세 페이지로 이동합니다
 2. **Data source** 섹션에서 `s3-synced-docs` 데이터 소스를 선택합니다
-3. **Sync** 버튼을 클릭합니다
+3. **동기화(Sync)** 버튼을 클릭합니다
+
+![Bedrock-kb-sync1](images/02-bedrock/bedrock-kb-sync1.png)
+
 4. 동기화 상태가 진행됩니다:
    - **Syncing** → 문서 파싱 및 임베딩 중
    - **Available** → 동기화 완료
+
+![Bedrock-kb-sync2](images/02-bedrock/bedrock-kb-sync2.png)
 
 > 동기화는 약 **3~5분** 소요됩니다. 문서 수와 크기에 따라 다를 수 있습니다.
 
@@ -110,6 +133,8 @@ Knowledge Base가 생성되면 S3의 문서를 임베딩하여 벡터 인덱스�
    - Number of source documents synced
    - Number of source documents failed
    - Number of new/modified/deleted chunks
+
+![Bedrock-kb-sync-check](images/02-bedrock/bedrock-kb-sync-check.png)
 
 > 만약 실패한 문서가 있다면 파일 형식이 지원되는지 확인하세요.
 > Bedrock KB는 PDF, TXT, HTML, MD, CSV, DOC/DOCX, XLS/XLSX 형식을 지원합니다.
@@ -128,8 +153,7 @@ Knowledge Base가 생성되면 S3의 문서를 임베딩하여 벡터 인덱스�
 
 4. 응답이 S3에 업로드한 문서 내용을 참조하여 답변하는지 확인합니다
 
-> 이 단계에서는 간단히 동작 여부만 확인합니다.
-> 자세한 챗봇 테스트는 Module 3에서 진행합니다.
+![Bedrock-kb-sync-test](images/02-bedrock/bedrock-kb-sync-test.png)
 
 ## 내부 동작 이해
 
@@ -337,4 +361,4 @@ Bedrock KB가 내부적으로 수행하는 RAG 파이프라인:
 
 ---
 
-**이전**: [Module 1 — GCS → S3 전송](01-datasync-gcs-to-s3.md) | **다음**: [Module 3 — RAG 챗봇 테스트](03-chatbot-test.md)
+**이전**: [Module 1: GCS → S3 전송](01-datasync-gcs-to-s3.md) | **다음**: [Module 3: RAG 챗봇 테스트](03-chatbot-test.md)

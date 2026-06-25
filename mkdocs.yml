@@ -38,8 +38,7 @@ nav:
   - "Module 0 - 사전 준비": 00-prerequisites.md
   - "Module 1 - GCS → S3 전송": 01-datasync-gcs-to-s3.md
   - "Module 2 - Bedrock Knowledge Bases": 02-bedrock-kb-create.md
-  - "Module 3 - RAG 챗봇 테스트": 03-chatbot-test.md
-  - "Module 4 - 리소스 정리": 04-cleanup.md
+  - "Module 3 - RAG 챗봇 테스트 & 리소스 정리": 03-chatbot-test.md
 
 plugins: []
 

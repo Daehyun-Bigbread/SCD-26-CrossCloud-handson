@@ -1,5 +1,5 @@
 const STORAGE_KEY = "scd26-workshop-progress";
-const MODULES = ["0", "1", "2", "3", "4"];
+const MODULES = ["0", "1", "2", "3"];
 
 const MODULE_DATA = [
   {
@@ -34,22 +34,12 @@ const MODULE_DATA = [
   },
   {
     id: "3",
-    title: "Module 3 - RAG 챗봇 테스트",
+    title: "Module 3 - RAG 챗봇 테스트 & 리소스 정리",
     url: "03-chatbot-test/",
     sections: [
-      { title: "KB 테스트 패널", sub: "Retrieve and generate 설정" },
-      { title: "RAG 질의응답", sub: "Claude 3.5 Sonnet으로 답변 검증" },
-      { title: "출처 확인", sub: "검색된 문서 인용 확인" },
-    ],
-  },
-  {
-    id: "4",
-    title: "Module 4 - 리소스 정리",
-    url: "04-cleanup/",
-    sections: [
-      { title: "Knowledge Base 삭제", sub: "Bedrock KB 및 데이터 소스 제거" },
-      { title: "OpenSearch 정리", sub: "벡터 컬렉션 삭제 (과금 방지)" },
-      { title: "S3 / DataSync 정리", sub: "버킷 및 태스크 삭제" },
+      { title: "KB 테스트 패널", sub: "Claude 3.5 Sonnet으로 RAG 질의응답" },
+      { title: "RAG 응답 검증", sub: "출처 확인 및 환각 거절 테스트" },
+      { title: "리소스 정리", sub: "KB / OpenSearch / S3 / DataSync 삭제 (과금 방지)" },
     ],
   },
 ];
