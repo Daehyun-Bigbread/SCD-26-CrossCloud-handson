@@ -104,11 +104,11 @@ KB 테스트 패널 (Claude 3.5 Sonnet)
 2. **DataSync 태스크와 위치** 를 삭제합니다. 전송에 사용한 리소스입니다.
 3. **S3 버킷** 을 마지막으로 삭제합니다. 객체를 먼저 비운 뒤 버킷을 지웁니다.
 
-> 아래 각 단계의 **제품 이름(예: Amazon Bedrock, AWS DataSync, S3)을 클릭하면** 서울 리전(`ap-northeast-2`) 콘솔의 해당 제품 위치로 바로 이동합니다.
+> 아래 각 단계의 **제품 이름(예: Amazon Bedrock, AWS DataSync, S3)을 클릭하면** 오레곤 리전(`us-west-2`) 콘솔의 해당 제품 위치로 바로 이동합니다.
 
 ## 3-4. Bedrock Knowledge Base 삭제
 
-1. [**Amazon Bedrock** 콘솔](https://ap-northeast-2.console.aws.amazon.com/bedrock/home?region=ap-northeast-2#/knowledge-bases) → **Knowledge Bases**
+1. [**Amazon Bedrock** 콘솔](https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/knowledge-bases) → **Knowledge Bases**
 2. `scd26-crosscloud-rag-kb` 선택
 3. **Delete** 클릭
 4. 확인 다이얼로그에서 Knowledge Base 이름을 입력하고 **Delete** 확인
@@ -120,7 +120,7 @@ KB 테스트 패널 (Claude 3.5 Sonnet)
 
 ### 확인: OpenSearch Serverless 컬렉션 삭제 확인
 
-1. [**Amazon OpenSearch Service** 콘솔](https://ap-northeast-2.console.aws.amazon.com/aos/home?region=ap-northeast-2#opensearch/collections)로 이동
+1. [**Amazon OpenSearch Service** 콘솔](https://us-west-2.console.aws.amazon.com/aos/home?region=us-west-2#opensearch/collections)로 이동
 2. 좌측 메뉴에서 **Serverless** → **DashBoard or Collections**
 3. Bedrock KB가 생성한 컬렉션이 **삭제 중** 또는 이미 사라졌는지 확인
 
@@ -133,7 +133,7 @@ KB 테스트 패널 (Claude 3.5 Sonnet)
 
 ### 태스크 삭제
 
-1. [**AWS DataSync** 콘솔](https://ap-northeast-2.console.aws.amazon.com/datasync/home?region=ap-northeast-2#/tasks) → **Tasks**
+1. [**AWS DataSync** 콘솔](https://us-west-2.console.aws.amazon.com/datasync/home?region=us-west-2#/tasks) → **Tasks**
 2. `scd26-gcs-to-s3-transfer` 태스크 선택
 3. **Actions** → **Delete** 클릭
 4. 확인 후 삭제
@@ -142,7 +142,7 @@ KB 테스트 패널 (Claude 3.5 Sonnet)
 
 ### 위치 삭제
 
-1. [**AWS DataSync** 콘솔](https://ap-northeast-2.console.aws.amazon.com/datasync/home?region=ap-northeast-2#/locations) → **Locations**
+1. [**AWS DataSync** 콘솔](https://us-west-2.console.aws.amazon.com/datasync/home?region=us-west-2#/locations) → **Locations**
 2. 생성한 위치 2개를 각각 선택하여 삭제:
    - Object storage 위치 (GCS 소스)
    - Amazon S3 위치 (대상)
@@ -154,7 +154,7 @@ S3 버킷은 **비어있어야만** 삭제할 수 있습니다.
 
 ### 버킷 비우기
 
-1. [**S3** 콘솔](https://ap-northeast-2.console.aws.amazon.com/s3/buckets?region=ap-northeast-2) → `scd26-handson-rag-docs-{이니셜}` 버킷 클릭
+1. [**S3** 콘솔](https://us-west-2.console.aws.amazon.com/s3/buckets?region=us-west-2) → `scd26-handson-rag-docs-{이니셜}` 버킷 클릭
 2. 모든 객체를 선택 (체크박스) → **Delete** 클릭
 3. `permanently delete` 입력 → **Delete objects** 확인
 
@@ -218,7 +218,7 @@ Bedrock KB와 DataSync가 자동 생성한 IAM 역할을 정리합니다.
     #!/bin/bash
     set -euo pipefail
 
-    REGION="ap-northeast-2"
+    REGION="${REGION:-${AWS_REGION:-${AWS_DEFAULT_REGION:-us-west-2}}}"
 
     echo "============================================"
     echo "  SCD-26 Cross-Cloud RAG 핸즈온 리소스 정리"

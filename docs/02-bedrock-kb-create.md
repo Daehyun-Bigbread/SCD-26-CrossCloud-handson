@@ -185,10 +185,10 @@ Bedrock KB가 내부적으로 수행하는 RAG 파이프라인:
 |------|------|------|
 | KB 생성 시 "루트 사용자 지원 안 됨" | 루트 사용자로 로그인 | IAM 사용자로 로그인 후 재시도 (Module 0 참고) |
 | KB 생성 시 IAM 오류 | 역할 생성 권한 없음 | Admin 권한 확인, 또는 수동으로 역할 생성 |
-| Sync 실패 | S3 버킷 접근 불가 | S3 URI 경로 확인, 리전이 ap-northeast-2인지 확인 |
+| Sync 실패 | S3 버킷 접근 불가 | S3 URI 경로 확인, 리전이 us-west-2인지 확인 |
 | Sync 시 문서 0건 | 폴더 경로 오류 | S3 URI가 `s3://버킷명/`인지 확인 (버킷 루트) |
 | 테스트 시 "모델 접근 불가" | Bedrock 모델 미승인 | Module 0의 모델 액세스 상태 재확인 |
-| 리전 불일치 | 다른 리전에서 KB 생성 | 콘솔 우측 상단 리전이 `ap-northeast-2`인지 확인 |
+| 리전 불일치 | 다른 리전에서 KB 생성 | 콘솔 우측 상단 리전이 `us-west-2`인지 확인 |
 
 ??? example "CLI 스크립트로 자동 구축 (복사/붙여넣기용)"
 
@@ -208,7 +208,7 @@ Bedrock KB가 내부적으로 수행하는 RAG 파이프라인:
     #!/bin/bash
     set -euo pipefail
 
-    REGION="ap-northeast-2"
+    REGION="${REGION:-${AWS_REGION:-${AWS_DEFAULT_REGION:-us-west-2}}}"
 
     echo "============================================"
     echo "  Module 2 — Bedrock Knowledge Base 생성"
