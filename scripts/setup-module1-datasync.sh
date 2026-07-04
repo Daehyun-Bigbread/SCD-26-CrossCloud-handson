@@ -339,7 +339,9 @@ while true; do
   sleep 5
 done
 
-FILE_COUNT=$(aws s3 ls "s3://$S3_BUCKET/" --region "$REGION" | wc -l | tr -d ' ')
+FILE_COUNT=$(aws s3api list-objects-v2 --bucket "$S3_BUCKET" --region "$REGION" \
+  --query 'length(Contents)' --output text 2>/dev/null || echo 0)
+[[ "$FILE_COUNT" == "None" || -z "$FILE_COUNT" ]] && FILE_COUNT=0
 echo "  S3 버킷에 ${FILE_COUNT}개 파일 확인"
 
 # ─── 완료 리포트 ──────────────────────────────────────────────
