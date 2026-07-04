@@ -13,6 +13,16 @@ GCS는 S3 호환 API를 제공하므로, DataSync의 **Object Storage** 위치 �
 GCS Bucket (소스) ─▶ HMAC Key 인증 ─▶ AWS DataSync  ─▶ S3 Bucket (대상)
 ```
 
+!!! important "리전 규칙 (반드시 먼저 읽으세요)"
+    **S3 버킷 · DataSync 소스 위치 · 대상 위치 · 태스크는 전부 같은 리전**에 있어야 합니다.
+    한 곳이라도 리전이 다르면 콘솔 버킷 목록에 버킷이 보이지 않고 `The specified bucket does not exist` 오류가 납니다.
+
+    - **핸즈온 제공 계정(Workshop Studio)**: **US West (Oregon) `us-west-2`** 로 고정입니다.
+    - **개인 계정으로 진행 시**: 원하는 리전 하나(예: 서울 `ap-northeast-2`)를 골라 **아래 모든 단계에서 동일하게** 사용하세요.
+
+    > 본문은 **오레곤(us-west-2)** 기준으로 표기합니다. 개인 계정이면 리전 값만 본인 것으로 바꿔 읽으면 됩니다.
+    > GCS 소스 버킷의 실제 위치(서울 등)는 상관없습니다 — DataSync는 전역 엔드포인트 `storage.googleapis.com`으로 접속하므로, "같은 리전" 규칙은 **AWS 쪽 리소스끼리**의 얘기입니다.
+
 ## 1-1. S3 버킷 생성 (전송 대상)
 
 먼저 문서를 받을 S3 버킷을 생성합니다.
@@ -24,7 +34,7 @@ GCS Bucket (소스) ─▶ HMAC Key 인증 ─▶ AWS DataSync  ─▶ S3 Bucket
 | 항목 | 값 |
 |------|-----|
 | Bucket name | `scd26-handson-rag-docs-{본인이니셜}` (예: `scd26-handson-rag-docs-toby`) |
-| AWS Region | **Asia Pacific (Seoul) ap-northeast-2** |
+| AWS Region | **US West (Oregon) us-west-2** (개인 계정은 원하는 리전 — 이후 모든 단계에서 동일하게 사용) |
 | Object Ownership | ACLs disabled (기본값) |
 | Block Public Access | 모두 차단 (기본값) |
 
@@ -43,7 +53,7 @@ HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍입니다.
 
 | 항목 | 값 |
 |------|-----|
-| Server URL | `https://storage.googleapis.com` |
+| Server URL | `storage.googleapis.com` |
 | GCS Bucket Name | scd26-crosscloud-handson |
 | Access Key | (진행자가 당일 안내) |
 | Secret Key | (진행자가 당일 안내) |
@@ -66,8 +76,8 @@ HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍입니다.
 |------|-----|
 | Location type | **Object storage** |
 | Agent | 선택 안 함 (퍼블릭 엔드포인트 사용) |
-| Server URL | `https://storage.googleapis.com` |
-| Bucket name | scd26-crosscloud-handson |
+| Server URL | `storage.googleapis.com` |
+| Bucket name | `scd26-crosscloud-handson` ⚠️ **GCS(구글) 소스 버킷 이름** — 내가 만든 S3 버킷 이름이 아닙니다 |
 | Folder | `/sample-docs/` |
 
 5. **인증** 섹션
@@ -89,8 +99,8 @@ HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍입니다.
 | 항목 | 값 |
 |------|-----|
 | 위치 유형 | **Amazon S3** |
-| 리전 | **Asia Pacific (Seoul, ap-northeast-2)** |
-| S3 bucket | **s3 둘러보기** 클릭 하여 생성한 버킷 (scd26-crosscloud-handson) 선택 |
+| 리전 | **1-1에서 S3 버킷을 만든 리전과 동일** (본문 기준: US West Oregon `us-west-2`) |
+| S3 bucket | **s3 둘러보기** 클릭 → 1-1에서 생성한 버킷(`scd26-handson-rag-docs-{본인이니셜}`) 선택 |
 | S3 스토리지 클래스 | Standard (기본값) |
 | IAM 역할 | **Auto generate** (자동 생성) 하여 할당 |
 
@@ -158,7 +168,9 @@ HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍입니다.
 |------|------|------|
 | `InvalidAccessKeyId` | HMAC Access Key 오타 | 키를 다시 복사하여 붙여넣기 |
 | `SignatureDoesNotMatch` | HMAC Secret Key 오타 또는 공백 | 키 앞뒤 공백 제거 후 재입력 |
-| Task가 UNAVAILABLE | 소스 위치 접근 불가 | Server URL이 `https://storage.googleapis.com`인지 확인 |
+| `The specified bucket does not exist` (콘솔 드롭다운에 S3 버킷이 안 보임) | DataSync 위치·태스크 리전이 S3 버킷 리전과 다름 | 콘솔 우측 상단 리전을 **버킷과 동일**하게 변경 (Workshop Studio: `us-west-2`) |
+| 소스에서 GCS 버킷을 못 찾음 / 전송 시 버킷 없음 | 소스 위치 Bucket name에 **S3 버킷 이름을 잘못 입력** | GCS 소스 버킷 이름(`scd26-crosscloud-handson`)으로 소스 위치 다시 생성 |
+| Task가 UNAVAILABLE | 소스 위치 접근 불가 | Server URL이 `storage.googleapis.com`인지 확인 |
 | Files transferred: 0 | 폴더 경로 오류 | GCS 버킷의 폴더 경로가 정확한지 진행자에게 확인 |
 | S3 대상 위치 생성 실패 (`s3:ListBucket` 권한) | IAM 역할 자동 생성 지연 | 1분 대기 후 **Auto generate** 다시 선택하여 재시도 |
 
@@ -184,8 +196,9 @@ HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍입니다.
 
         1. AWS 콘솔 우측 상단의 **CloudShell**(터미널 아이콘)을 클릭합니다
         2. AWS CLI v2 · `git` · 콘솔 로그인 자격증명이 **자동 적용**되므로 `aws configure`는 **불필요**합니다
-        3. 이 스크립트는 CloudShell 표시 리전과 무관하게 **항상 서울(ap-northeast-2)**에 리소스를 생성합니다.
-           나중에 콘솔에서 리소스를 찾을 때는 리전을 **서울**로 맞춰서 확인하세요
+        3. 이 스크립트는 **CloudShell이 열린 리전**(Workshop Studio 계정 기본값 `us-west-2` 오레곤)에 리소스를 생성합니다.
+           나중에 콘솔에서 리소스를 찾을 때는 리전을 **생성된 리전과 동일**(Workshop Studio: 오레곤 `us-west-2`)하게 맞춰서 확인하세요.
+           개인 계정에서 특정 리전에 만들려면 앞에 `REGION=`을 붙여 지정합니다 — 예: `REGION=ap-northeast-2 bash scripts/setup-module1-datasync.sh`
 
         **실행**
         ```bash
@@ -206,7 +219,7 @@ HMAC 키는 S3 호환 API 형태의 Access Key / Secret Key 쌍입니다.
         **준비**
 
         1. **AWS CLI v2 설치** — [공식 설치 가이드](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-        2. **`aws configure`** 로 IAM 사용자의 Access Key / Secret Key와 리전(`ap-northeast-2`)을 설정합니다
+        2. **`aws configure`** 로 Access Key / Secret Key와 리전을 설정합니다 (S3 버킷과 동일한 리전 — Workshop Studio: `us-west-2`, 개인 계정: 본인이 쓰는 리전)
         3. `aws sts get-caller-identity` 로 인증이 정상인지 확인합니다
 
         **실행** (Mac/Linux: 터미널 · Windows: Git Bash 또는 WSL)

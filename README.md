@@ -27,7 +27,7 @@ Google Cloud Storage(GCS)에 저장된 문서를 AWS DataSync로 Amazon S3에 �
 
 | 모듈 | 내용 | 소요 시간 |
 |------|------|----------|
-| [Module 0: 사전 준비](docs/00-prerequisites.md) | AWS 계정 설정, Bedrock 모델 액세스 요청 | 5분 |
+| [Module 0: 사전 준비](docs/00-prerequisites.md) | Workshop Studio 접속, 리전·CloudShell·Bedrock 모델 확인 | 5분 |
 | [Module 1: GCS → S3 전송](docs/01-datasync-gcs-to-s3.md) | AWS DataSync로 GCS 문서를 S3로 동기화 | ~10분 |
 | [Module 2: Bedrock Knowledge Bases](docs/02-bedrock-kb-create.md) | Knowledge Base 생성 & 데이터 소스 동기화 | ~15분 |
 | [Module 3: RAG 챗봇 테스트 & 리소스 정리](docs/03-chatbot-test.md) | KB 테스트 패널에서 RAG 챗봇 검증 후 과금 방지를 위한 리소스 삭제 | ~15분 |
@@ -36,12 +36,12 @@ Google Cloud Storage(GCS)에 저장된 문서를 AWS DataSync로 Amazon S3에 �
 
 ## 사전 준비 (필수)
 
-핸즈온 시작 전에 미리 점검해 두세요. Bedrock 모델 액세스는 대부분 기본 활성화되어 있고 Anthropic Claude도 사용 사례 양식 제출 시 즉시 부여되지만, 신규 계정 검증·콘솔 반영 지연 등을 감안해 하루 전쯤 확인하는 것을 권장합니다.
+핸즈온 시작 전에 미리 점검해 두세요. 이번 핸즈온은 **AWS Workshop Studio**로 제공되는 실습 계정을 사용합니다. Bedrock 모델(Titan Embeddings V2, Anthropic Claude 3.5 Sonnet)은 실습 계정에서 대부분 사전 활성화되어 있습니다.
 
-1. **AWS 계정** 준비 (신규/기존 모두 가능, 결제 수단 등록 필요 — 프리 티어로는 커버되지 않는 유료 서비스 사용)
-2. **IAM 사용자**로 로그인 (루트 사용자로는 Bedrock KB 생성 불가)
-3. 리전을 **`ap-northeast-2` (서울)**로 설정
-4. **Bedrock 모델 액세스 요청**
+1. **Workshop Studio 참가 링크**로 접속 (진행자가 당일 안내) → **Open AWS console**
+2. 콘솔 리전이 **`us-west-2` (오레곤)**인지 확인 (실습 계정 기본 리전)
+3. 콘솔 상단의 **CloudShell** 열기 (이미 인증됨, 리전 자동 설정)
+4. **Bedrock 모델 사용 가능 여부 확인**
    - Anthropic Claude 3.5 Sonnet
    - Amazon Titan Text Embeddings V2
 5. 자세한 안내: [Module 0 — 사전 준비](docs/00-prerequisites.md)

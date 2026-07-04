@@ -15,7 +15,9 @@ set -euo pipefail
 #   4. IAM 역할
 ###############################################################################
 
-REGION="ap-northeast-2"
+# 리전: 환경변수 우선(CloudShell은 열린 리전을 자동 주입), 없으면 us-west-2(오레곤) 기본값.
+#   강제 지정: REGION=ap-northeast-2 bash scripts/cleanup-aws.sh
+REGION="${REGION:-${AWS_REGION:-${AWS_DEFAULT_REGION:-us-west-2}}}"
 
 echo "============================================"
 echo "  SCD-26 Cross-Cloud RAG 핸즈온 리소스 정리"

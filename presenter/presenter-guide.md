@@ -20,17 +20,15 @@
 ```
 [사전 준비 안내 — Cross-Cloud RAG 챗봇 핸즈온]
 
-핸즈온 시작 전에 아래 준비를 완료해주세요:
+이번 핸즈온은 AWS Workshop Studio 실습 계정으로 진행합니다.
+개인 AWS 계정이나 결제 수단은 필요 없습니다.
 
-1. AWS 계정 준비 (프리 티어 가능)
-2. AWS 콘솔 로그인 → 리전을 ap-northeast-2 (서울)로 설정
-3. Amazon Bedrock 모델 액세스 요청:
-   - 콘솔에서 Bedrock → Model access → Modify model access
-   - Amazon Titan Text Embeddings V2 체크
-   - Anthropic Claude 3.5 Sonnet 체크
-   - Submit
+당일 아래 순서로 접속만 준비해주세요:
 
-승인에 최대 수 시간 소요될 수 있으니 미리 요청해주세요.
+1. 진행자가 안내하는 Workshop Studio 참가 링크로 접속 (access code는 당일 공유)
+2. 로그인 후 Open AWS console 클릭
+3. 콘솔 우측 상단 리전이 US West (Oregon) us-west-2 인지 확인
+4. (선택) Bedrock → 모델 카탈로그에서 Claude 3.5 Sonnet이 보이는지 확인
 
 상세 가이드: [Module 0 링크]
 ```
@@ -39,7 +37,7 @@
 
 DataSync 실패 시를 대비하여 **이미 문서가 업로드된 S3 버킷**을 사전에 준비합니다:
 
-1. `ap-northeast-2`에 S3 버킷 생성: `scd26-handson-fallback-docs`
+1. `us-west-2`(오레곤)에 S3 버킷 생성: `scd26-handson-fallback-docs`
 2. `sample-docs/`의 8개 파일을 `docs/` 경로에 업로드
 3. 버킷 정책에서 참가자 계정의 읽기 권한을 설정하거나, 퍼블릭 읽기를 허용
 
@@ -58,7 +56,7 @@ HMAC 키는 **복사 가능한 텍스트**로 배포합니다 (스크린샷 X):
 ```
 [DataSync 설정용 — 복사해서 사용하세요]
 
-Server URL: https://storage.googleapis.com
+Server URL: storage.googleapis.com
 GCS Bucket Name: {실제 버킷 이름}
 Access Key: {실제 Access Key}
 Secret Key: {실제 Secret Key}
@@ -85,7 +83,7 @@ Secret Key: {실제 Secret Key}
 | DataSync 전송 파일 0건 | 폴더 경로 오류 | GCS 폴더 경로 재확인 |
 | KB 생성 후 Sync 실패 | S3 URI 오류 | `s3://버킷명/docs/` 형식 확인, 리전 일치 확인 |
 | OpenSearch Serverless 프로비저닝 지연 | 서비스 용량 | 3~5분 대기, 최대 10분 |
-| 리전 불일치 | 다른 리전에서 리소스 생성 | 콘솔 우측 상단 리전이 ap-northeast-2인지 확인 유도 |
+| 리전 불일치 | 다른 리전에서 리소스 생성 | 콘솔 우측 상단 리전이 us-west-2(오레곤)인지 확인 유도 (실습 계정은 오레곤 고정) |
 
 ### 참가자가 완전히 막힌 경우
 
@@ -113,4 +111,4 @@ Secret Key: {실제 Secret Key}
 - 폴백 S3 버킷: ~$0.01
 - HMAC 키: 무료
 
-참가자 1인당 예상 비용: ~$1.50 (3시간 기준)
+참가자 비용: **없음** — Workshop Studio 실습 계정에서 발생하는 비용은 이벤트(진행자) 측에서 부담하며, 계정은 종료 시 자동 회수됩니다.
