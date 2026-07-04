@@ -2,17 +2,23 @@
 set -euo pipefail
 
 ###############################################################################
-# Module 2 — Bedrock Knowledge Base 생성 + 데이터 소스 동기화
+# Module 2 — Bedrock KB용 IAM 역할 준비 + 데이터 소스 연결 + 동기화 (멱등)
+#
+# ⚠ Knowledge Base 자체(+OpenSearch Serverless 벡터 저장소)는 콘솔의
+#   '빠른 생성(Quick create)'으로만 만들 수 있어, 이 스크립트로는 생성하지 않습니다.
+#   흐름:
+#     1) 이 스크립트 실행 → IAM 역할 준비 후, KB가 없으면 콘솔 생성 안내 출력
+#     2) 콘솔(docs/02)에서 KB 생성 (이름: scd26-crosscloud-rag-kb)
+#     3) 이 스크립트 재실행 → 기존 KB 인식 → 데이터 소스 연결 + 동기화 자동 진행
 #
 # 사용법:
-#   chmod +x scripts/setup-module2-bedrock-kb.sh
-#   ./scripts/setup-module2-bedrock-kb.sh
+#   bash scripts/setup-module2-bedrock-kb.sh
 #
 # 사전 요구사항:
 #   - AWS CLI v2 (AWS CloudShell이면 자동 준비됨)
 #   - 리전: us-west-2 (오레곤) — Workshop Studio 계정 기본. CloudShell 리전을 자동 사용
 #   - Module 1 완료 (S3 버킷에 문서가 있어야 함)
-#   - Bedrock 모델 액세스 승인 완료 (Titan Embeddings V2)
+#   - Bedrock 모델 액세스 (Titan Embeddings V2, Claude 3.5 Sonnet)
 ###############################################################################
 
 # 리전: 환경변수 우선(CloudShell은 열린 리전을 자동 주입), 없으면 us-west-2(오레곤) 기본값.
@@ -38,11 +44,14 @@ while true; do
   echo "  ✗ 버킷 이름은 필수입니다. 다시 입력하세요."
 done
 
-# S3 버킷에 파일이 있는지 확인
-FILE_COUNT=$(aws s3 ls "s3://$S3_BUCKET/" --region "$REGION" 2>/dev/null | wc -l | tr -d ' ')
+# S3 버킷에 파일이 있는지 확인 (set -e/pipefail에 안 걸리도록 || echo 0 로 방어)
+FILE_COUNT=$(aws s3api list-objects-v2 --bucket "$S3_BUCKET" --region "$REGION" \
+  --query 'length(Contents)' --output text 2>/dev/null || echo 0)
+[[ "$FILE_COUNT" == "None" || -z "$FILE_COUNT" ]] && FILE_COUNT=0
 if [[ "$FILE_COUNT" -eq 0 ]]; then
-  echo "✗ S3 버킷 '$S3_BUCKET'에 파일이 없습니다."
-  echo "  Module 1을 먼저 실행하세요: ./scripts/setup-module1-datasync.sh"
+  echo "✗ S3 버킷 '$S3_BUCKET'에 파일이 없거나 접근할 수 없습니다."
+  echo "  - 버킷 이름이 맞는지 확인하세요 (Module 1에서 만든 버킷)"
+  echo "  - 파일이 없으면 Module 1을 먼저 완료하세요: ./scripts/setup-module1-datasync.sh"
   exit 1
 fi
 echo "  ✓ S3 버킷 확인: ${FILE_COUNT}개 파일"
@@ -135,83 +144,53 @@ if [[ "$KB_ROLE_WAS_CREATED" == true ]]; then
   sleep 15
 fi
 
-# ─── Step 2: Knowledge Base 생성 ──────────────────────────────
+# ─── Step 2: Knowledge Base 확인 (생성은 콘솔에서) ────────────
 echo ""
-echo "━━━ [2/4] Knowledge Base 생성 (3~5분 소요) ━━━"
+echo "━━━ [2/4] Knowledge Base 확인 ━━━"
 
-# 기존 KB가 있으면 재사용 (이름으로 탐색)
+# 기존 KB 탐색 (콘솔 또는 이전 실행에서 만들어졌는지)
 KB_ID=$(aws bedrock-agent list-knowledge-bases --region "$REGION" \
   --query "knowledgeBaseSummaries[?name=='${KB_NAME}'].knowledgeBaseId | [0]" \
   --output text 2>/dev/null || true)
 
-if [[ -n "$KB_ID" && "$KB_ID" != "None" ]]; then
-  echo "✓ 이미 존재하는 Knowledge Base 재사용: $KB_NAME (ID: $KB_ID)"
-  REUSED+=("Knowledge Base: $KB_NAME")
-else
-  KB_ID=""
-  KB_RESULT=$(aws bedrock-agent create-knowledge-base \
-    --name "$KB_NAME" \
-    --description "Cross-Cloud RAG 핸즈온 - GCS에서 동기화한 문서 기반 Knowledge Base" \
-    --role-arn "$KB_ROLE_ARN" \
-    --knowledge-base-configuration '{
-      "type": "VECTOR",
-      "vectorKnowledgeBaseConfiguration": {
-        "embeddingModelArn": "arn:aws:bedrock:'"$REGION"'::foundation-model/amazon.titan-embed-text-v2:0",
-        "embeddingModelConfiguration": {
-          "bedrockEmbeddingModelConfiguration": {
-            "embeddingDataType": "FLOAT32",
-            "dimensions": 1024
-          }
-        }
-      }
-    }' \
-    --storage-configuration '{
-      "type": "OPENSEARCH_SERVERLESS",
-      "opensearchServerlessConfiguration": {
-        "collectionArn": "auto",
-        "fieldMapping": {
-          "metadataField": "AMAZON_BEDROCK_METADATA",
-          "textField": "AMAZON_BEDROCK_TEXT",
-          "vectorField": "bedrock-knowledge-base-default-vector"
-        },
-        "vectorIndexName": "bedrock-knowledge-base-default-index"
-      }
-    }' \
-    --region "$REGION" \
-    --output json 2>&1)
+if [[ -z "$KB_ID" || "$KB_ID" == "None" ]]; then
+  cat <<EOF
 
-  KB_ID=$(echo "$KB_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['knowledgeBase']['knowledgeBaseId'])" 2>/dev/null)
-  [[ -n "$KB_ID" ]] && CREATED+=("Knowledge Base: $KB_NAME")
-fi
+⚠ Knowledge Base '${KB_NAME}' 가 아직 없습니다.
+  OpenSearch Serverless 벡터 저장소 '빠른 생성(Quick create)'은 AWS 콘솔에서만 지원됩니다.
+  아래 절차로 콘솔에서 KB를 만든 뒤, 이 스크립트를 다시 실행하세요.
+  → 다시 실행하면 데이터 소스 연결 + 동기화를 자동으로 이어서 진행합니다.
 
-if [[ -z "$KB_ID" ]]; then
+  ▶ 콘솔에서 KB 생성 (Amazon Bedrock → 지식 기반 → 생성)
+     1. 이름: ${KB_NAME}
+     2. IAM 역할: 기존 역할 사용 → ${KB_ROLE_NAME} (방금 이 스크립트가 준비)
+        (또는 '새 서비스 역할 생성'으로 두어도 됩니다)
+     3. 데이터 소스: Amazon S3 → s3://${S3_BUCKET}/
+     4. 임베딩 모델: Titan Text Embeddings V2
+     5. 벡터 저장소: 새 벡터 스토어 빠른 생성 → OpenSearch Serverless
+  자세한 안내: docs/02-bedrock-kb-create.md
+EOF
   echo ""
-  echo "⚠ Knowledge Base CLI 자동 생성에 실패했습니다."
-  echo "  (OpenSearch Serverless Quick Create는 CLI 지원이 제한적일 수 있습니다)"
-  echo ""
-  echo "  ▶ AWS 콘솔에서 수동으로 생성하세요:"
-  echo "    1. Amazon Bedrock → 지식 기반 → 지식 기반 생성"
-  echo "    2. 이름: scd26-crosscloud-rag-kb"
-  echo "    3. 데이터 소스: S3 → s3://$S3_BUCKET/"
-  echo "    4. 임베딩 모델: Titan Text Embeddings V2"
-  echo "    5. 벡터 저장소: 새로운 벡터 저장소 빠른 생성 → OpenSearch Serverless"
-  echo ""
-  echo "  자세한 안내: docs/02-bedrock-kb-create.md"
+  echo "  [지금까지 준비됨]"
+  [[ ${#CREATED[@]} -gt 0 ]] && for item in "${CREATED[@]}"; do echo "  ＋ $item"; done
+  [[ ${#REUSED[@]} -gt 0 ]] && for item in "${REUSED[@]}"; do echo "  ✓ $item"; done
   exit 0
 fi
 
-echo "  KB 생성 시작 (ID: $KB_ID)"
-echo "  ACTIVE 상태 대기 중..."
+echo "✓ Knowledge Base 확인: $KB_NAME (ID: $KB_ID)"
+REUSED+=("Knowledge Base: $KB_NAME")
+
+# ACTIVE 대기 (콘솔에서 방금 만들었으면 잠시 CREATING일 수 있음)
+echo "  ACTIVE 상태 확인 중..."
 while true; do
   KB_STATUS=$(aws bedrock-agent get-knowledge-base \
-    --knowledge-base-id "$KB_ID" \
-    --region "$REGION" \
-    --query 'knowledgeBase.status' --output text 2>/dev/null)
+    --knowledge-base-id "$KB_ID" --region "$REGION" \
+    --query 'knowledgeBase.status' --output text 2>/dev/null || echo "UNKNOWN")
   if [[ "$KB_STATUS" == "ACTIVE" ]]; then
-    echo "✓ Knowledge Base 생성 완료!"
+    echo "  ✓ KB ACTIVE"
     break
   elif [[ "$KB_STATUS" == "FAILED" ]]; then
-    echo "✗ Knowledge Base 생성 실패. AWS 콘솔에서 확인하세요."
+    echo "✗ KB 상태가 FAILED입니다. 콘솔에서 확인하세요."
     exit 1
   fi
   echo "  상태: $KB_STATUS ..."
@@ -221,14 +200,15 @@ done
 # ─── Step 3: 데이터 소스 추가 ─────────────────────────────────
 echo ""
 echo "━━━ [3/4] 데이터 소스 추가 ━━━"
+# 콘솔에서 KB를 만들 때 이미 데이터 소스가 붙었을 수 있음 → 있으면 첫 번째 것 재사용
 DS_ID=$(aws bedrock-agent list-data-sources \
   --knowledge-base-id "$KB_ID" --region "$REGION" \
-  --query "dataSourceSummaries[?name=='${DS_NAME}'].dataSourceId | [0]" \
+  --query 'dataSourceSummaries[0].dataSourceId' \
   --output text 2>/dev/null || true)
 
 if [[ -n "$DS_ID" && "$DS_ID" != "None" ]]; then
-  echo "✓ 이미 존재하는 데이터 소스 재사용: $DS_NAME"
-  REUSED+=("데이터 소스: $DS_NAME")
+  echo "✓ 기존 데이터 소스 재사용 (ID: $DS_ID)"
+  REUSED+=("데이터 소스 (기존)")
 else
   DS_ID=$(aws bedrock-agent create-data-source \
     --knowledge-base-id "$KB_ID" \
@@ -290,10 +270,10 @@ if [[ ${#REUSED[@]} -gt 0 ]]; then
   for item in "${REUSED[@]}"; do echo "  ✓ $item"; done
   echo ""
 fi
-echo "  생성된 리소스:"
-echo "  ├─ Knowledge Base: $KB_NAME (ID: $KB_ID)"
-echo "  ├─ 데이터 소스: $DS_NAME (S3: $S3_BUCKET)"
-echo "  └─ OpenSearch Serverless: 자동 생성됨"
+echo "  구성된 리소스:"
+echo "  ├─ Knowledge Base: $KB_NAME (ID: $KB_ID) — 콘솔에서 생성됨"
+echo "  ├─ 데이터 소스: (S3: $S3_BUCKET) — 동기화 완료"
+echo "  └─ OpenSearch Serverless: KB 빠른 생성 시 자동 구성"
 echo ""
 echo "  다음 단계 (AWS 콘솔에서 진행):"
 echo "  1. Amazon Bedrock → 지식 기반 → scd26-crosscloud-rag-kb"
